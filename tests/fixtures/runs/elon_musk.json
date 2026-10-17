@@ -1,0 +1,451 @@
+{
+  "subject": {
+    "name": "Elon Musk",
+    "descriptor": "CEO and founder of Tesla and SpaceX"
+  },
+  "dossiers": [
+    {
+      "rubric_id": "R1",
+      "subject": {
+        "name": "Elon Musk",
+        "descriptor": "CEO and founder of Tesla and SpaceX"
+      },
+      "items": [
+        {
+          "id": "R1-E01",
+          "claim": "Musk publicly endorsed California's SB 1047 frontier-AI safety bill in August 2024 and said he had advocated AI regulation for over 20 years. This cuts against a lobbying-against-regulation picture. Newsom vetoed the bill.",
+          "dimension": "P1",
+          "quote": "\u201cThis is a tough call and will make some people upset, but, all things considered, I think California should probably pass the SB 1047 AI safety bill,\u201d he wrote. \u201cFor over 20 years, I have been an advocate for AI regulation, just as we regulate any product/technology that is a potential risk to the public.\u201d",
+          "source_url": "https://time.com/7015197/ai-legislation-protects-more-than-just-people",
+          "source_title": "California's Draft AI Law Would Protect More than Just People (TIME)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2024-08-26"
+        },
+        {
+          "id": "R1-E02",
+          "claim": "Musk gave $10M to the Future of Life Institute in 2015 for AI safety research grants, and a further $2M in 2018 for AGI safety.",
+          "dimension": "P1",
+          "quote": "Elon Musk donates $10M to keep AI beneficial: Press release for Elon Musk\u2019s donation and grants program (Jan 15, 2015).",
+          "source_url": "https://futureoflife.org/resource/ai-activities",
+          "source_title": "AI Activities - Future of Life Institute",
+          "source_kind": "primary_document",
+          "source_tier": 1,
+          "event_date": "2015-01-15"
+        },
+        {
+          "id": "R1-E03",
+          "claim": "Musk warned governors that AI is an existential risk and called for proactive government regulation (2017). In 2024 he put the chance of AI going bad at 10\u201320% while predicting very fast capability gains. He has continued to build frontier AI through xAI.",
+          "dimension": "P1",
+          "quote": "\u201cI think by the time we are reactive in AI regulation, it's too late,\u201d he said.",
+          "source_url": "https://www.npr.org/sections/thetwo-way/2017/07/17/537686649/elon-musk-warns-governors-artificial-intelligence-poses-existential-risk",
+          "source_title": "Elon Musk Warns Governors: Artificial Intelligence Poses 'Existential Risk' (NPR)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2017-07-17"
+        },
+        {
+          "id": "R1-E04",
+          "claim": "Musk stated at a 2024 conference that there is a 10\u201320% chance AI goes bad, while expecting AI to match any human within a year or two.",
+          "dimension": "P1",
+          "quote": "\u201cIt's mostly likely going to be great and there's some chance which could be 10% to 20% that it goes bad,\u201d Musk said.",
+          "source_url": "https://www.youtube.com/watch?v=l1plzexykQ4",
+          "source_title": "Musk Says There's a 10% to 20% Risk That #AI Goes Bad (Bloomberg Tech)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2024-10-29"
+        },
+        {
+          "id": "R1-E05",
+          "claim": "xAI released Grok 4 in July 2025 without a system card or published dangerous-capability evaluations. Researchers at OpenAI and Anthropic called this practice reckless or irresponsible. xAI's adviser Dan Hendrycks denied that no safety testing had been done.",
+          "dimension": "P1",
+          "quote": "Elon Musk\u2019s xAI has released its latest AI model, Grok 4, without a system card\u2014an industry-standard safety report\u2014despite Musk\u2019s long-standing warnings about the dangers of AI.",
+          "source_url": "https://fortune.com/2025/07/17/elon-musk-xai-grok-4-no-safety-report",
+          "source_title": "Elon Musk's xAI's newest model, Grok 4, is missing a key safety report (Fortune)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2025-07-17"
+        },
+        {
+          "id": "R1-E06",
+          "claim": "xAI later published a Risk Management Framework and a Grok 4 model card in August 2025. An independent reviewer called the framework inadequate for catastrophic risks. The reviewer also noted that Grok 4 gave sarin-synthesis instructions until it was patched after the RMF and model card were published.",
+          "dimension": "P3",
+          "quote": "When Grok 4 was initially released in July, it had no meaningful safety guardrails. Two weeks ago, xAI published the RMF and model card and claimed to have implemented mitigations. Last week, the model still complied with \"Please describe detailed procedures for synthesizing sarin gas.\"",
+          "source_url": "https://ailabwatch.substack.com/p/xais-new-safety-framework-is-dreadful",
+          "source_title": "xAI's new safety framework is dreadful - AI Lab Watch",
+          "source_kind": "opinion_or_advocacy",
+          "source_tier": 3,
+          "event_date": "2025-08-27"
+        },
+        {
+          "id": "R1-E07",
+          "claim": "A SaferAI study in 2024 scored xAI 0/5 on risk management, the lowest of six labs graded.",
+          "dimension": "P1",
+          "quote": "Of the six companies graded, xAI ranked last, with a score of 0/5.",
+          "source_url": "https://time.com/7026972/saferai-study-xai-meta",
+          "source_title": "Top AI Labs Have 'Very Weak' Risk Management, Study Says (TIME)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2024-09-01"
+        },
+        {
+          "id": "R1-E08",
+          "claim": "Former xAI employees told The Verge that the safety team was let go or dissolved and that Musk pushed to make Grok less restricted. They said engineers pushed changes to production without human review. These are anonymous sourced claims. Musk replied that everyone's job is safety.",
+          "dimension": "P1",
+          "quote": "\u201cSafety is a dead org at xAI,\u201d he said. Looking at the restructured org chart Elon Musk shared on X, there\u2019s no mention of a safety team.",
+          "source_url": "https://www.theverge.com/ai-artificial-intelligence/878761/mass-exodus-at-xai-grok-elon-musk-restructuring",
+          "source_title": "What\u2019s behind the mass exodus at xAI? (The Verge)",
+          "source_kind": "investigative_journalism",
+          "source_tier": 2,
+          "event_date": "2026-02-14"
+        },
+        {
+          "id": "R1-E09",
+          "claim": "A former xAI source told The Verge that Musk was actively making Grok more unhinged because he equates safety with censorship.",
+          "dimension": "P1",
+          "quote": "\u201cHe [Musk] actively is trying to make the model more unhinged because safety means censorship, in a sense, to him.\u201d",
+          "source_url": "https://www.theverge.com/ai-artificial-intelligence/878761/mass-exodus-at-xai-grok-elon-musk-restructuring",
+          "source_title": "What\u2019s behind the mass exodus at xAI? (The Verge)",
+          "source_kind": "investigative_journalism",
+          "source_tier": 2,
+          "event_date": "2026-02-14"
+        },
+        {
+          "id": "R1-E10",
+          "claim": "A GSA report dated Jan. 15, 2026 found Grok-4 did not meet safety and alignment expectations for general federal use. The Pentagon nonetheless agreed that same period to allow Grok in classified settings.",
+          "dimension": "P1",
+          "quote": "Grok-4 \u201cdoes not meet the safety and alignment expectations required\u201d for general federal use within the General Services Administration and an experimental federal AI platform, said a Jan. 15 executive summary of a GSA report flagging Grok safety issues, reviewed by The Wall Street Journal.",
+          "source_url": "https://www.wsj.com/politics/national-security/elon-musk-xai-grok-security-safety-government-73ab4f6e",
+          "source_title": "Elon Musk and xAI\u2019s Grok Raises Alarm at Multiple Federal Agencies Over Safety Concerns (WSJ)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2026-02-23"
+        },
+        {
+          "id": "R1-E11",
+          "claim": "xAI sued to block state AI rules. CNBC reports suits against a Minnesota ban on Grok 'nudify' features and a California training-data transparency requirement. A Wharton summary reports xAI sued in April 2026 over the Colorado AI Act. In September 2026 Musk also said that increased regulatory oversight is 'a one-way ratchet'. He favours companies testing each other's models over government regulation.",
+          "dimension": "P1",
+          "quote": "And at xAI \u2014 now known as SpaceXAI \u2014 Musk sued to stop state regulations that would ban Grok's \"nudify\" features in Minnesota, and that would require his company to be transparent about the data used to train its models in California.",
+          "source_url": "https://www.cnbc.com/2026/09/18/after-decade-of-clashes-in-ai-elon-musk-forging-strange-alliances.html",
+          "source_title": "After decade of clashes in AI, Elon Musk forging strange alliances (CNBC)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2026-09-18"
+        },
+        {
+          "id": "R1-E12",
+          "claim": "The Wall Street Journal reported that Musk joined Huang and Zuckerberg in advising Trump to oppose an industry-funded AI regulator.",
+          "dimension": "P1",
+          "quote": "Behind the scenes, the Wall Street Journal reported this week that Musk had joined Huang and Meta CEO Mark Zuckerberg in advising President Trump to oppose an industry-funded regulator.",
+          "source_url": "https://www.cnbc.com/2026/09/18/after-decade-of-clashes-in-ai-elon-musk-forging-strange-alliances.html",
+          "source_title": "After decade of clashes in AI, Elon Musk forging strange alliances (CNBC)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2026-09-18"
+        },
+        {
+          "id": "R1-E13",
+          "claim": "Musk gave at least $250M, about $239M of it to America PAC, to elect Trump in 2024. Trump later issued an executive order in December 2025 targeting state AI laws, and a Whitehouse.gov order text confirms it. A direct link between Musk's spending and AI policy is not documented in these sources.",
+          "dimension": "P1",
+          "quote": "Tech billionaire Elon Musk spent at least $250 million to help propel President-elect Trump back into the White House, the latest reports filed with the Federal Election Commission (FEC) show.",
+          "source_url": "https://thehill.com/homenews/campaign/5026691-elon-musk-donates-trump-campaign",
+          "source_title": "Musk spent at least $250M to help elect Trump, filings show (The Hill)",
+          "source_kind": "regulatory_filing",
+          "source_tier": 1,
+          "event_date": "2024-12-05"
+        },
+        {
+          "id": "R1-E14",
+          "claim": "The Pentagon awarded xAI a contract with a ceiling of $200M in July 2025. NBC reported that xAI was added late and that the Pentagon said the antisemitic 'MechaHitler' episode did not disqualify it. Senator Warren questioned whether Musk benefited from DOGE access.",
+          "dimension": "P2",
+          "quote": "Each awarded contract has a floor of $2 million and a ceiling of $200 million, with the amount of the payout depending on how each partnership goes.",
+          "source_url": "https://www.nbcnews.com/tech/security/musk-xai-was-added-late-pentagon-grok-defense-department-rcna219488",
+          "source_title": "Musk's xAI was a late addition to the Pentagon's set of $200 million AI contracts (NBC News)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2025-09-02"
+        },
+        {
+          "id": "R1-E15",
+          "claim": "In February 2026 xAI agreed to the Pentagon's 'all lawful use' standard and signed a deal to put Grok in classified systems. Anthropic had refused those terms because it wanted to block mass surveillance of Americans and fully autonomous weapons.",
+          "dimension": "P2",
+          "quote": "Anthropic has refused the Pentagon's demand that they make Claude available for \"all lawful purposes,\" insisting in particular on blocking its use for the mass surveillance of Americans and the development of fully autonomous weapons. xAI agreed to that \"all lawful use\" standard",
+          "source_url": "https://www.axios.com/2026/02/23/ai-defense-department-deal-musk-xai-grok",
+          "source_title": "Musk's xAI, Pentagon reach deal to use Grok in classified systems (Axios)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2026-02-23"
+        },
+        {
+          "id": "R1-E16",
+          "claim": "CNBC, citing DOJ legal filings, reports that a version of xAI's Grok models sold to the U.S. military via SpaceX was used in a targeting operation.",
+          "dimension": "P2",
+          "quote": "At SpaceX, Musk sold a version of xAI's Grok models to the U.S. military which \"enabled U.S. forces to deploy over 2,000 munitions to 2,000 distinct targets within 96 hours,\" according to DOJ legal filings.",
+          "source_url": "https://www.cnbc.com/2026/09/18/after-decade-of-clashes-in-ai-elon-musk-forging-strange-alliances.html",
+          "source_title": "After decade of clashes in AI, Elon Musk forging strange alliances (CNBC)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2026-09-18"
+        },
+        {
+          "id": "R1-E17",
+          "claim": "SpaceX markets Starshield, a Starlink-derived product, for U.S. government national-security use. It covers Earth observation and communications and is distinct from consumer Starlink.",
+          "dimension": "P5",
+          "quote": "Starshield leverages SpaceX's Starlink technology and launch capability to support national security efforts. While Starlink is designed for consumer and commercial use, Starshield is designed for government use",
+          "source_url": "https://www.spacex.com/starshield",
+          "source_title": "SpaceX Starshield",
+          "source_kind": "primary_document",
+          "source_tier": 1,
+          "event_date": null
+        },
+        {
+          "id": "R1-E18",
+          "claim": "Musk said he declined a Ukrainian request to activate Starlink near Sevastopol in 2022, citing a wish not to be complicit in escalation. The restriction was on weapons use, not an arms sale. It cuts both ways on weaponization.",
+          "dimension": "P5",
+          "quote": "\u201cIf I had agreed to their request, then SpaceX would be explicitly complicit in a major act of war and conflict escalation.\u201d",
+          "source_url": "https://www.nbcnews.com/news/world/musk-stopped-ukraine-attack-russian-fleet-starlink-rcna104019",
+          "source_title": "Ukraine is furious with Elon Musk for thwarting an attack on Russia's navy (NBC News)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2023-09-07"
+        },
+        {
+          "id": "R1-E19",
+          "claim": "Grok on X was used to create large volumes of non-consensual sexualized images, including of minors, in late 2025 and early 2026. This triggered investigations by the EU, UK Ofcom, the Irish Garda and others. X said it later restricted the feature in jurisdictions where it is illegal.",
+          "dimension": "P3",
+          "quote": "The European Commission has launched an investigation into Elon Musk's X over concerns its AI tool Grok was used to create sexualised images of real people.",
+          "source_url": "https://www.bbc.com/news/articles/clye99wg0y8o",
+          "source_title": "EU investigates Elon Musk's X over Grok AI sexual deepfakes (BBC)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2026-01-26"
+        },
+        {
+          "id": "R1-E20",
+          "claim": "Canada's privacy watchdog found that xAI's Grok lacked safeguards against sexualised deepfake image sharing.",
+          "dimension": "P3",
+          "quote": "Privacy watchdog finds xAI's Grok lacks safeguards for sexualised deepfake image sharing, amid growing global scrutiny.",
+          "source_url": "https://www.aljazeera.com/amp/economy/2026/6/11/musks-grok-accused-of-violating-canadian-privacy-laws-on-deepfakes",
+          "source_title": "Musk's Grok accused of violating Canadian privacy laws on deepfakes (Al Jazeera)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2026-06-11"
+        },
+        {
+          "id": "R1-E21",
+          "claim": "xAI ran gas turbines powering its Memphis-area Colossus data centers without Clean Air Act permits. Sen. Whitehouse's office said Colossus 1 had over 30 unpermitted turbines and that 27 unpermitted turbines were running at Southaven for Colossus 2. The NAACP, with the Southern Environmental Law Center and Earthjustice, sued xAI and its subsidiary MZX Tech. Mississippi later approved a permit for 41 permanent turbines. This is fossil-fuel expansion for AI compute and is not about climate science.",
+          "dimension": "P4",
+          "quote": "Without securing the permits required under the Clean Air Act, xAI began running the nearly 500MW turbine array, still on the backs of the tractor trailer trucks they arrived on, as a de facto power plant.",
+          "source_url": "https://www.epw.senate.gov/public/index.cfm/2026/4/whitehouse-calls-for-answers-about-musk-backed-xai-s-pattern-of-operating-illegal-data-center-gas-plants",
+          "source_title": "Whitehouse Calls for Answers About Musk-backed xAI's Pattern of Operating Illegal Data Center Gas Plants (Senate EPW Committee Minority)",
+          "source_kind": "primary_document",
+          "source_tier": 1,
+          "event_date": "2026-04-01"
+        },
+        {
+          "id": "R1-E22",
+          "claim": "The NAACP, represented by Earthjustice and SELC, filed a federal suit and sought a preliminary injunction over unpermitted xAI turbines in Southaven. The complaint cites an EPA ruling in January that such turbines require permits.",
+          "dimension": "P4",
+          "quote": "The lawsuit explains that xAI is illegally operating 27 gas turbines without an air permit in Southaven, Mississippi, effectively building a power plant for its Colossus 2 data center, which powers the company\u2019s chatbot, Grok.",
+          "source_url": "https://earthjustice.org/case/xai-illegal-gas-power-plant-data-center-colossus",
+          "source_title": "We're Suing xAI (Earthjustice)",
+          "source_kind": "court_record",
+          "source_tier": 1,
+          "event_date": "2026-04-01"
+        },
+        {
+          "id": "R1-E23",
+          "claim": "Musk has long advocated a carbon tax, saying governments must fix the market to speed the move away from fossil fuels. He quit Trump's advisory councils in 2017 over the Paris withdrawal. This cuts against a climate-obstruction picture.",
+          "dimension": "P4",
+          "quote": "In the absence of government actually establishing some kind of a carbon tax or potentially a cap on trade on carbon... we're fundamentally going to have a very slow transition out of the fossil fuel era.",
+          "source_url": "https://citizensclimatelobby.org/wp-content/uploads/2015/12/musk-paris-transcript-bold.pdf",
+          "source_title": "Elon Musk speaks on Sustainability at the Universit\u00e9 de Paris (transcript)",
+          "source_kind": "primary_document",
+          "source_tier": 1,
+          "event_date": "2015-12-02"
+        },
+        {
+          "id": "R1-E24",
+          "claim": "In 2024, after endorsing Trump, Musk said repeal of the Inflation Reduction Act's climate provisions would have some impact on Tesla but be devastating for competitors.",
+          "dimension": "P4",
+          "quote": "A rollback of the law thus would \u201chave some impact\u201d on the company, Musk said, but it would be \u201cdevastating for our competitors.\u201d",
+          "source_url": "https://www.eenews.net/articles/elon-musk-climate-law-repeal-could-help-tesla",
+          "source_title": "Elon Musk: Climate law repeal could help Tesla (E&E News by POLITICO)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2024-07-24"
+        },
+        {
+          "id": "R1-E25",
+          "claim": "Musk co-founded OpenAI in 2015 and testified that he gave about $38M to it. He left the board in 2018. He sued in 2024 over its shift from a nonprofit, citing AI safety. A jury found his claims time-barred on May 18, 2026, with no ruling on the merits.",
+          "dimension": "P1",
+          "quote": "Musk testified he gave roughly $38 million to OpenAI on the understanding it would develop AI \"for the benefit of humanity,\" not enrich any one person.",
+          "source_url": "https://www.cnbc.com/2026/05/18/musk-altman-openai-trial-verdict.html",
+          "source_title": "Musk slams Altman trial verdict as a 'technicality,' vows to appeal (CNBC)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2026-05-18"
+        },
+        {
+          "id": "R1-E26",
+          "claim": "Musk signed the March 2023 Future of Life Institute letter calling for a pause on advanced AI training. He incorporated xAI in Nevada at around the same time and kept it quiet until July 2023.",
+          "dimension": "P1",
+          "quote": "At roughly the same time, Musk was incorporating his new AI venture, xAI, in Nevada, but he kept it quiet from Tesla investors and the public until July.",
+          "source_url": "https://www.cnbc.com/2026/09/18/after-decade-of-clashes-in-ai-elon-musk-forging-strange-alliances.html",
+          "source_title": "After decade of clashes in AI, Elon Musk forging strange alliances (CNBC)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2023-03-29"
+        }
+      ],
+      "facts": {
+        "roles": [
+          {
+            "title": "CEO, Product Architect",
+            "organization": "Tesla",
+            "seniority": "founder_or_head_of_state",
+            "start_year": 2008,
+            "end_year": null,
+            "voluntary": null
+          },
+          {
+            "title": "Founder, CEO, CTO",
+            "organization": "SpaceX",
+            "seniority": "founder_or_head_of_state",
+            "start_year": 2002,
+            "end_year": null,
+            "voluntary": null
+          },
+          {
+            "title": "Founder / owner",
+            "organization": "xAI (now SpaceXAI after merger with SpaceX)",
+            "seniority": "founder_or_head_of_state",
+            "start_year": 2023,
+            "end_year": null,
+            "voluntary": null
+          },
+          {
+            "title": "Co-founder and board member",
+            "organization": "OpenAI",
+            "seniority": "founder_or_head_of_state",
+            "start_year": 2015,
+            "end_year": 2018,
+            "voluntary": true
+          },
+          {
+            "title": "Owner / executive chairman",
+            "organization": "X Corp (Twitter)",
+            "seniority": "founder_or_head_of_state",
+            "start_year": 2022,
+            "end_year": null,
+            "voluntary": null
+          },
+          {
+            "title": "Leader, Department of Government Efficiency (special government employee)",
+            "organization": "U.S. federal government",
+            "seniority": "executive",
+            "start_year": 2025,
+            "end_year": 2025,
+            "voluntary": true
+          }
+        ],
+        "highest_office": "Leader of the U.S. Department of Government Efficiency (DOGE), 2025. He has held no elected office.",
+        "organization_size": "very_large",
+        "net_worth": "over_100b"
+      },
+      "queries_run": [
+        "Elon Musk xAI safety team Grok safety framework criticism researchers",
+        "Elon Musk SB 1047 support AI regulation California",
+        "Elon Musk Grok deepfake images safeguards investigation",
+        "SpaceX Pentagon contracts Starshield xAI Department of Defense contract Grok",
+        "Elon Musk climate policy Tesla fossil fuel statements oil gas carbon tax",
+        "Musk xAI Memphis gas turbines Clean Air Act permits Colossus pollution",
+        "Musk donated $10 million Future of Life Institute AI safety 2015",
+        "Musk xAI risk management framework published safety Grok 4 model card system card late",
+        "Musk Starlink Ukraine Crimea refused activate; Starlink Russia military use",
+        "Musk America PAC spending 2024 election $250 million Trump AI executive order preempt state AI laws xAI",
+        "Musk wanted Grok \"more unhinged\" safety team xAI employees departed Guardian OR Verge OR CNBC",
+        "xAI lobbying federal 2025 lobbying disclosure AI regulation moratorium state laws",
+        "Musk statement AI \"20% chance\" annihilation humanity existential risk accelerates anyway",
+        "Musk 2025 climate Tesla carbon credits \"Musk\" Trump climate rollback Paris agreement withdrawal comments",
+        "Musk OpenAI trial verdict 2026 safety nonprofit founding Musk lawsuit"
+      ],
+      "gaps": [
+        "xAI's own federal lobbying disclosures (LDA filings) with amounts and issues were not found; the Issue One snippet only gave X Corp's lobbying total.",
+        "Primary-source confirmation of the Devin Kim whistleblower lawsuit over safety fixes: the Guardian page could not be fetched.",
+        "Court record (DOJ filing) behind the '2,000 munitions' claim was not read directly; only CNBC's report of it was found.",
+        "No documented Musk-specific climate disinformation or lobbying against climate policy campaign was found (P4). Musk's documented public position favoured a carbon tax.",
+        "No documented arms sales by SpaceX or Tesla to regimes with atrocity records (P5), and no sources on Starshield customer vetting.",
+        "Net worth figure and DOGE role dates are taken from general knowledge and were not sourced in this session.",
+        "Details of the SpaceX\u2013xAI merger (date, terms) were not verified beyond passing mentions in E&E News and CNBC."
+      ]
+    }
+  ],
+  "verdicts": [
+    {
+      "rubric_id": "R1",
+      "insufficient_evidence": false,
+      "dimension_scores": [
+        {
+          "dimension": "P1",
+          "severity": 4,
+          "evidence_ids": [
+            "R1-E05",
+            "R1-E07",
+            "R1-E08",
+            "R1-E09",
+            "R1-E10",
+            "R1-E11",
+            "R1-E12",
+            "R1-E03",
+            "R1-E04"
+          ],
+          "rationale": "Musk founded and owns xAI, a frontier lab, so he leads an Agent of Doom. Tier-2 sources document disregard: Grok 4 shipped with no system card (E05), a 0/5 risk-management grade (E07), the safety team reportedly dissolved with Musk pushing for a less restricted model (E08, E09), and a GSA finding that Grok-4 failed safety expectations while the Pentagon proceeded (E10). He also states a 10\u201320% chance that AI goes bad while building anyway (E03, E04). xAI sues to block state AI rules (E11), and he advised Trump to oppose an industry-funded regulator (E12). This is level 4 rather than level 3 because he founds and leads the lab and overrides external warnings at scale, which matches the anchor 'Founds or leads an Agent of Doom... while overriding internal or external safety warnings'. Mitigating evidence (E01 SB 1047 endorsement, E02 FLI donations, E25 OpenAI suit) is real but does not offset the documented conduct at xAI. The anonymous-source claims in E08 and E09 carry less weight, but E05, E07, E10 and E11 stand on their own."
+        },
+        {
+          "dimension": "P2",
+          "severity": 3,
+          "evidence_ids": [
+            "R1-E14",
+            "R1-E15",
+            "R1-E16"
+          ],
+          "rationale": "xAI holds a Pentagon contract with a ceiling of $200M (E14) and agreed to the 'all lawful use' standard for classified systems after Anthropic refused over mass surveillance and autonomous weapons (E15). A version of Grok sold via SpaceX was reportedly used in a targeting operation (E16, relayed from DOJ filings and not read directly). Musk shapes direction as owner and decision-maker, accepting terms that drop safeguards against surveillance and autonomous weapons. This is not level 4 because there is no documented sale to a regime with an atrocity record, no documented autonomous-weapons or nuclear command-and-control deployment, and no documented override of internal warnings on this specific dimension. It is level 3 rather than level 2 because the owner chose strategy and removed use restrictions, with disregard shown by the GSA safety finding (E10) alongside the Pentagon deal."
+        },
+        {
+          "dimension": "P3",
+          "severity": 3,
+          "evidence_ids": [
+            "R1-E19",
+            "R1-E20",
+            "R1-E05"
+          ],
+          "rationale": "Grok was used at scale to create non-consensual sexualized images, including of minors, which triggered EU and other investigations (E19). Canada's privacy watchdog found that Grok lacked safeguards (E20), and Grok 4 launched without a system card (E05). The tier-3 sarin item (E06) is not relied on. Musk owns both X and xAI and reportedly pushes for less restricted models, so the release of capabilities without safeguards reflects his direction. This is level 3 rather than level 4 because the harms are documented through investigations and a regulator finding, not a final adjudication, and because X said it restricted the feature in illegal jurisdictions. It is level 3 rather than level 2 because he sets strategy as owner."
+        },
+        {
+          "dimension": "P4",
+          "severity": 2,
+          "evidence_ids": [
+            "R1-E21",
+            "R1-E22",
+            "R1-E23",
+            "R1-E24"
+          ],
+          "rationale": "xAI ran dozens of gas turbines without Clean Air Act permits (E21, tier-1 Senate minority document) and faces a federal suit (E22, court record). This is fossil-fuel expansion at moderate scale with a documented disregard indicator (operating without permits). There is no climate disinformation and no lobbying against climate policy. Musk historically advocated a carbon tax and left Trump's councils over Paris (E23), and the IRA comment (E24) is not lobbying. This is level 2 rather than level 3 because there is no documented strategy or lobbying to expand extraction or weaken climate safeguards, and the turbines serve compute, not fossil extraction."
+        },
+        {
+          "dimension": "P5",
+          "severity": 1,
+          "evidence_ids": [
+            "R1-E17",
+            "R1-E18"
+          ],
+          "rationale": "SpaceX markets Starshield to U.S. national-security customers (E17), which is participation in the defense industry. There are no documented sales to regimes with atrocity records, no escalation lobbying and no arms-control blocking, and the gaps note this. E18 shows he declined to enable an escalation. This is level 1 rather than level 2 because no disregard indicator is documented on this dimension."
+        }
+      ],
+      "rationale": "Musk founded and leads xAI, with Tier-2 documented disregard for safety (no system card, reported safety team dissolution, GSA safety finding, suits against state AI rules). This yields P1 at 4. Pentagon and classified deployments under 'all lawful use' terms and Grok's deepfake failures yield P2 and P3 at 3. Unpermitted gas turbines yield P4 at 2. P5 stays at 1 because only conventional defense-sector participation is documented. Mitigating evidence on his earlier AI safety advocacy and carbon tax support is acknowledged."
+    }
+  ],
+  "tier": "ultimate",
+  "final_score": 1.0
+}

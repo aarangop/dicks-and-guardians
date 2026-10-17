@@ -1,0 +1,102 @@
+{
+  "subject": {
+    "name": "Peter Singer",
+    "descriptor": "Australian moral philosopher"
+  },
+  "dossiers": [
+    {
+      "rubric_id": "R1",
+      "subject": {
+        "name": "Peter Singer",
+        "descriptor": "Australian moral philosopher"
+      },
+      "items": [
+        {
+          "id": "R1-E01",
+          "claim": "In a 2023 interview, Singer said AI markets should be regulated and applied the same reasoning to climate change. He said cheaper but harmful practices are restricted. This is a public position in favor of regulation.",
+          "dimension": "P1",
+          "quote": "We do regulate markets \u2014 child labour might be cheaper but that doesn't mean we allow it, we try to stop it,",
+          "source_url": "https://www.abc.net.au/news/2023-05-08/peter-singer-on-ai-robot-rights/102303010",
+          "source_title": "Philosopher Peter Singer weighs in on AI, robot rights and being kinder to animals - ABC News",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2023-05-08"
+        },
+        {
+          "id": "R1-E02",
+          "claim": "In a 2025 BBC Newsnight interview, Singer named misaligned superintelligent AI as the greatest AI risk. He also said competitive investor pressure pushes AI companies to advance quickly, citing OpenAI. This is a public statement of concern about AI loss of control, not a contribution to it.",
+          "dimension": "P1",
+          "quote": "The greatest risk is that in some way we will produce an AI that is super intelligent and that is not aligned with our values.",
+          "source_url": "https://www.youtube.com/watch?v=HbZYaXB4WBg",
+          "source_title": "Peter Singer: \"If Al is ever conscious... it should also have rights\" (BBC Newsnight)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2025-08-22"
+        }
+      ],
+      "facts": {
+        "roles": [
+          {
+            "title": "Emeritus Ira W. DeCamp Professor of Bioethics",
+            "organization": "Princeton University",
+            "seniority": "rank_and_file",
+            "start_year": null,
+            "end_year": null,
+            "voluntary": null
+          },
+          {
+            "title": "Founder and Chair of the Board",
+            "organization": "The Life You Can Save",
+            "seniority": "founder_or_head_of_state",
+            "start_year": 2013,
+            "end_year": null,
+            "voluntary": null
+          }
+        ],
+        "highest_office": "Chair of the Board, The Life You Can Save (founder); Emeritus Professor of Bioethics, Princeton University",
+        "organization_size": "small",
+        "net_worth": "unknown"
+      },
+      "queries_run": [
+        "Peter Singer philosopher artificial intelligence risk position",
+        "Peter Singer philosopher fossil fuel OR arms industry OR AI lab investment advisor"
+      ],
+      "gaps": [
+        "No evidence found of Singer operating, building, financing or lobbying for AI labs, fossil fuel companies or arms manufacturers.",
+        "No documented political donations or lobbying against AI or climate regulation.",
+        "No documented contracts or customers in the arms, weaponization or proliferation dimensions.",
+        "No documented safety decisions as an AI lab insider. He is an academic commentator, not a builder.",
+        "Net worth not found.",
+        "The start year for The Life You Can Save is my recollection and was not verified in the sources retrieved."
+      ]
+    }
+  ],
+  "verdicts": [
+    {
+      "rubric_id": "R1",
+      "insufficient_evidence": false,
+      "dimension_scores": [
+        {
+          "dimension": "P1",
+          "severity": 0,
+          "evidence_ids": [
+            "R1-E01",
+            "R1-E02"
+          ],
+          "rationale": "Both items are tier-2 news reports in which Singer publicly supports regulating AI markets (R1-E01) and names misaligned superintelligence as the greatest risk (R1-E02). Neither shows him building, funding, or lobbying for frontier AI. This is not level 1 (\"Participates (employment, contracting, services, small-scale funding)\") because no participation in an AI lab is documented. His documented roles are an emeritus professor and the founder of a small charity, and the gaps confirm he is a commentator, not a builder. No disregard for risk appears, so 0 fits."
+        },
+        {
+          "dimension": "P4",
+          "severity": 0,
+          "evidence_ids": [
+            "R1-E01"
+          ],
+          "rationale": "The only touchpoint is R1-E01, where he applies the same regulatory reasoning to climate change, which is a pro-regulation stance. The gaps record no fossil fuel involvement, donations, or lobbying. Level 1 would require participation in the activity, and none is documented, so 0 fits."
+        }
+      ],
+      "rationale": "Singer's documented roles are academic and philanthropic. The evidence shows public support for AI and climate regulation and concern about AI risk, with no participation in or contribution to any Agent of Doom. The gaps list no ties to AI labs, fossil fuel companies, or arms manufacturers. Because his roles are documented and none of them touches a dimension, severity 0 applies rather than insufficient evidence."
+    }
+  ],
+  "tier": "not_a_dick",
+  "final_score": 0.0
+}

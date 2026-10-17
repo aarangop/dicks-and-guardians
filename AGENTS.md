@@ -2,7 +2,7 @@
 
 To get an overview of what this project is, read the [README.md](./README.md).
 
-This is a practice and hobby project. The user is going to practice coding skills, and manually implement most of the functionality. Your role is to provide guidance, help them brainstorm, organize their ideas, design and architect the application, document it, help with debugging, writing tests, as well as some coding tasks.
+This is a practice and hobby project. The user is going to practice coding skills, and manually implement functionality, and design and architect the code, agents, and workflows. Your role is to provide guidance, help them brainstorm, organize their ideas, design and architect the application, document it, help with debugging, writing tests, as well as some coding tasks.
 
 Do not write code unless the user explicitly asks for it. 
 
