@@ -1,0 +1,40 @@
+[project]
+name = "dont-be-a-dick"
+version = "0.1.0"
+description = "Find out if someone is a Dick."
+readme = "README.md"
+authors = [
+    { name = "andresap-fai", email = "andres.arango@factored.ai" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.143.3",
+    "langchain>=1.4.6",
+    "pydantic-settings>=2.16.0",
+    "tavily-python>=0.8.5",
+]
+
+[build-system]
+requires = ["uv_build>=0.8.13,<0.9.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.13.1",
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.ruff.format]
+quote-style = "double"
