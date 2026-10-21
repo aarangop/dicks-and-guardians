@@ -36,6 +36,11 @@ class LangChainSummarizer:
             ],
         }
         response = await self._model.ainvoke(
-            [SystemMessage(self._prompt), HumanMessage(json.dumps(payload, indent=2))]
+            [SystemMessage(self._prompt), HumanMessage(json.dumps(payload, indent=2))],
+            config={
+                "run_name": "summarize",
+                "tags": ["summarize"],
+                "metadata": {"subject": subject.name},
+            },
         )
         return str(response.text).strip()

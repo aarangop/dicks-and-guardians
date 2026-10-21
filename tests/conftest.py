@@ -1,3 +1,9 @@
+import os
+
+# Keep the test suite out of LangSmith. Set before `config` calls load_dotenv, which never
+# overrides variables already in the environment.
+os.environ["LANGSMITH_TRACING"] = "false"
+
 import pytest
 from fastapi.testclient import TestClient
 from pytest_httpx import HTTPXMock

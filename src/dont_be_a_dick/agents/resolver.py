@@ -69,7 +69,12 @@ class LangChainSubjectResolver:
         request = f"Name: {name}" + (f"\nDescriptor: {descriptor}" if descriptor else "")
         result = await self._agent.ainvoke(
             {"messages": [{"role": "user", "content": request}]},
-            config={"recursion_limit": self._recursion_limit},
+            config={
+                "recursion_limit": self._recursion_limit,
+                "run_name": "resolve_subject",
+                "tags": ["resolve"],
+                "metadata": {"subject": name},
+            },
         )
         decision = result.get("structured_response")
         if not isinstance(decision, ResolutionDecision):

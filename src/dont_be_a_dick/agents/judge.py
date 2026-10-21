@@ -52,7 +52,14 @@ class LangChainJudge:
         problems: list[str] = []
         for _ in range(MAX_ATTEMPTS):
             try:
-                verdict = await self._structured.ainvoke(messages)
+                verdict = await self._structured.ainvoke(
+                    messages,
+                    config={
+                        "run_name": f"judge:{rubric.id}",
+                        "tags": ["judge", rubric.id],
+                        "metadata": {"rubric": rubric.id, "subject": dossier.subject.name},
+                    },
+                )
             except (ValidationError, OutputParserException) as e:
                 problems = [f"invalid structure: {e}"]
             else:
