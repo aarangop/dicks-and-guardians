@@ -16,7 +16,7 @@ from dont_be_a_dick.tools.tavily_calls import TavilyCallError, call_with_retries
 logger = logging.getLogger(__name__)
 
 MAX_URLS = 3
-MAX_CONTENT_CHARS = 8000
+MAX_CONTENT_CHARS = 4000
 CHUNKS_PER_SOURCE = 3
 REQUEST_TIMEOUT_SECONDS = 30.0
 

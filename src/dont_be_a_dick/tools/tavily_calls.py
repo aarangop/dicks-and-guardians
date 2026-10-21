@@ -1,6 +1,7 @@
 """Retry and error mapping shared by every tool that calls Tavily."""
 
 import logging
+import random
 import time
 from collections.abc import Callable
 
@@ -15,7 +16,9 @@ from tavily.errors import (
 
 logger = logging.getLogger(__name__)
 
-MAX_RETRIES = 3
+MAX_RETRIES = 7
+MAX_BACKOFF_SECONDS = 60.0
+# Waits run 1, 2, 4, 8, 16, 32s (about a minute in all): enough to ride out a per-minute limit.
 
 
 class TavilyCallError(Exception):
@@ -41,8 +44,8 @@ def call_with_retries(call: Callable[[], dict], *, what: str) -> dict:
                 raise TavilyCallError(
                     f"{what.capitalize()} failed after {MAX_RETRIES} attempts: {type(e).__name__}"
                 ) from e
-            wait_time = 2**attempt
-            logger.warning(f"{type(e).__name__}. Retrying in {wait_time}s")
+            wait_time = min(2**attempt, MAX_BACKOFF_SECONDS) * random.uniform(0.75, 1.25)
+            logger.warning(f"{type(e).__name__}. Retrying in {wait_time:.1f}s")
             time.sleep(wait_time)
         except Exception as e:
             logger.exception(f"Unexpected error during {what}")
