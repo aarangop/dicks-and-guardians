@@ -56,6 +56,7 @@ class ScoringPipeline:
         rubrics: Sequence[Rubric],
         score: ScoreFn = compute_score,
         config: ScoringConfig = DEFAULT_CONFIG,
+        max_concurrent_research: int = 3,
     ) -> None:
         self._resolver = resolver
         self._researcher = researcher
@@ -64,6 +65,7 @@ class ScoringPipeline:
         self._rubrics = list(rubrics)
         self._score = score
         self._config = config
+        self._research_slots = asyncio.Semaphore(max_concurrent_research)
 
     async def run(self, name: str, descriptor: str | None = None) -> ScoreOutcome:
         resolution = await self._resolver.resolve(name, descriptor)
@@ -93,7 +95,7 @@ class ScoringPipeline:
 
     async def gather_dossiers(self, state: PipelineState) -> None:
         results = await asyncio.gather(
-            *(self._researcher.research(state.subject, r) for r in self._rubrics),
+            *(self._research_limited(state.subject, r) for r in self._rubrics),
             return_exceptions=True,
         )
         for rubric, result in zip(self._rubrics, results, strict=True):
@@ -101,6 +103,11 @@ class ScoringPipeline:
                 self._record_failure(state, rubric, "research", result)
             else:
                 state.dossiers[rubric.id] = result
+
+    async def _research_limited(self, subject: Subject, rubric: Rubric) -> Dossier:
+        """Research agents are the heavy API users, so only a few run at once."""
+        async with self._research_slots:
+            return await self._researcher.research(subject, rubric)
 
     async def judge_dossiers(self, state: PipelineState) -> None:
         rubrics = [r for r in self._rubrics if r.id in state.dossiers]

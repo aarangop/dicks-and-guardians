@@ -196,6 +196,34 @@ async def test_researchers_run_concurrently() -> None:
 
 
 @pytest.mark.anyio
+async def test_research_concurrency_is_capped() -> None:
+    class CountingResearcher(FakeResearcher):
+        running = peak = 0
+
+        async def research(self, subject, rubric):
+            self.running += 1
+            self.peak = max(self.peak, self.running)
+            await asyncio.sleep(0.01)
+            self.running -= 1
+            return make_dossier(subject, rubric)
+
+    researcher = CountingResearcher()
+    built = ScoringPipeline(
+        resolver=FakeResolver(Resolved(subject=SUBJECT)),
+        researcher=researcher,
+        judge=FakeJudge(),
+        summarizer=FakeSummarizer(),
+        rubrics=(R1, R5),
+        max_concurrent_research=1,
+    )
+
+    outcome = await built.run("Test Person")
+
+    assert isinstance(outcome, Scored)
+    assert researcher.peak == 1
+
+
+@pytest.mark.anyio
 async def test_research_failure_for_r1_makes_the_result_unrated() -> None:
     built, *_ = pipeline(researcher=FakeResearcher(fail_for={"R1"}))
 
