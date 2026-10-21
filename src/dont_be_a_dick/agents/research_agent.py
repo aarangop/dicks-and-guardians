@@ -8,6 +8,7 @@ tools, and the real wiring lives in one place (`dont_be_a_dick.dependencies`).
 from collections.abc import Sequence
 
 from langchain.agents import create_agent
+from langchain.agents.middleware import AgentMiddleware
 from langchain_core.language_models import BaseChatModel
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel
@@ -29,6 +30,7 @@ def build_research_agent(
     tools: Sequence[BaseTool],
     system_prompt: str = SYSTEM_PROMPT,
     response_format: type[BaseModel] | None = None,
+    middleware: Sequence[AgentMiddleware] = (),
 ):
     """Create the research agent from injected dependencies.
 
@@ -41,4 +43,5 @@ def build_research_agent(
         tools=list(tools),
         system_prompt=system_prompt,
         response_format=response_format,
+        middleware=list(middleware),
     )

@@ -6,7 +6,7 @@ from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
 from langchain_core.messages import AIMessage
 from langchain_core.tools import tool
 
-from dont_be_a_dick.agents.researcher import LangChainResearcher, ResearchError
+from dont_be_a_dick.agents.researcher import LangChainResearcher, ResearchBudget, ResearchError
 from dont_be_a_dick.domain.rubrics import R1
 from dont_be_a_dick.domain.schemas import Subject
 
@@ -122,3 +122,36 @@ async def test_system_prompt_comes_from_the_injected_provider(web_search) -> Non
     await researcher.research(SUBJECT, R1)
 
     assert seen == ["R1"]
+
+
+def test_budget_sets_the_recursion_limit() -> None:
+    assert ResearchBudget(searches=10, fetches=5).recursion_limit == 80
+    assert ResearchBudget(searches=20, fetches=10).recursion_limit == 140
+
+
+@pytest.mark.anyio
+async def test_searches_past_the_budget_are_refused_and_the_agent_still_finishes(
+    web_search, searches
+) -> None:
+    model = scripted(
+        call("web_search", {"query": "one"}, "1"),
+        call("web_search", {"query": "two"}, "2"),
+        call("web_search", {"query": "three"}, "3"),
+        call("ResearchFindings", FINDINGS, "4"),
+    )
+    researcher = LangChainResearcher(
+        model, [web_search], budget=ResearchBudget(searches=2, fetches=1)
+    )
+
+    dossier = await researcher.research(SUBJECT, R1)
+
+    assert searches == ["one", "two"]
+    assert dossier.items
+
+
+def test_the_budget_is_stated_in_the_system_prompt(web_search) -> None:
+    researcher = LangChainResearcher(
+        scripted(), [web_search], budget=ResearchBudget(searches=4, fetches=2)
+    )
+
+    assert "4 searches and 2 fetches" in researcher._budgeted_prompt(R1)

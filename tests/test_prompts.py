@@ -31,3 +31,12 @@ def test_authoring_comments_are_stripped() -> None:
 @pytest.mark.parametrize("name", ["summarizer", "subject_resolution"])
 def test_shared_prompts_load(name) -> None:
     assert shared_prompt(name)
+
+
+@pytest.mark.parametrize("rubric", RUBRICS, ids=lambda r: r.id)
+def test_researcher_prompt_states_the_budget(rubric) -> None:
+    text = rubric_prompt(rubric, "researcher", max_searches=7, max_fetches=3)
+
+    assert "7 searches and 3 fetches" in text
+    assert "{max_searches}" not in text
+    assert "{max_fetches}" not in text

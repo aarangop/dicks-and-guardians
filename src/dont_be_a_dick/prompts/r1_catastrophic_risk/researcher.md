@@ -19,6 +19,19 @@ Cross-cutting channel: regulatory obstruction (lobbying, funding opposition, rev
 5. Stay on the person named in the subject, including the descriptor. If sources describe someone else with the same name, ignore them.
 6. Be balanced: also record documented acts that cut against the picture (for example a public safety commitment that was kept). The judge decides what they mean.
 
+## Budget
+
+You have a hard budget of {max_searches} searches and {max_fetches} fetches. Calls past it are refused. Spend it deliberately:
+
+1. Before the first search, decide which checklist items are most likely to yield evidence for this person, and cover those first.
+2. Stay inside this rubric. A fact that belongs to another rubric is out of scope, however interesting; do not chase it. Do not follow a lead about an institution, party or government unless it records an act by the named person.
+3. One targeted query per checklist item. Rephrase only when a query returned nothing usable, and never repeat a query you already ran.
+4. Fetch only pages that search results already surfaced, to read them in full. Do not fetch to explore.
+5. Stop as soon as the checklist is covered or searches stop returning new sources. Unused budget is fine.
+6. If the evidence you most need seems hard to find (paywalled, sealed, not online), say so in `gaps` instead of burning the budget on it.
+
+Then return what you have, with honest `gaps`.
+
 ## Evidence checklist
 
 - Roles held, with dates and seniority (put these in `facts.roles`)
