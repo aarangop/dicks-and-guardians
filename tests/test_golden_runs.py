@@ -11,10 +11,12 @@ from pathlib import Path
 
 import pytest
 
-from dont_be_a_dick.domain.rubrics import RUBRICS
+from dont_be_a_dick.domain.rubrics import R1
 from dont_be_a_dick.domain.schemas import Dossier, JudgeVerdict
 from dont_be_a_dick.domain.scoring import compute_score
 
+# Fixtures were recorded when R1 was the only rubric; re-save them to add the others.
+RUBRICS = (R1,)
 FIXTURES = sorted((Path(__file__).parent / "fixtures" / "runs").glob("*.json"))
 
 

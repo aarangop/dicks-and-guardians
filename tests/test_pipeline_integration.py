@@ -1,11 +1,10 @@
 """End-to-end runs of the real pipeline (Anthropic + Tavily). Slow and costs credits."""
 
-import asyncio
-
 import pytest
 
 from dont_be_a_dick import dependencies as deps
 from dont_be_a_dick.config import Settings
+from dont_be_a_dick.domain.rubrics import R1
 from dont_be_a_dick.domain.schemas import DickScoreReport, Scored
 from dont_be_a_dick.workflows.scoring import SUMMARY_UNAVAILABLE
 
@@ -19,7 +18,8 @@ def pipeline():
         settings.anthropic_api_key.get_secret_value() and settings.tavily_api_key.get_secret_value()
     ):
         pytest.skip("DBAD_ANTHROPIC_API_KEY and DBAD_TAVILY_API_KEY must be set")
-    return deps.build_scoring_pipeline(settings)
+    # One rubric is enough to exercise the machinery; the research agents differ only by prompt.
+    return deps.build_scoring_pipeline(settings, rubrics=(R1,))
 
 
 def assert_sound(report: DickScoreReport) -> None:
@@ -39,10 +39,9 @@ def assert_sound(report: DickScoreReport) -> None:
 
 @pytest.mark.anyio
 async def test_real_pipeline_orders_a_low_and_a_high_case(pipeline) -> None:
-    low, high = await asyncio.gather(
-        pipeline.run("Peter Singer", "Australian moral philosopher"),
-        pipeline.run("Elon Musk"),
-    )
+    # Sequential, to stay under API rate limits.
+    low = await pipeline.run("Peter Singer", "Australian moral philosopher")
+    high = await pipeline.run("Elon Musk")
 
     assert isinstance(low, Scored)
     assert isinstance(high, Scored)

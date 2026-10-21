@@ -1,6 +1,6 @@
-# Dickness rubric (draft v0.2)
+# Dickness rubric (draft v0.3)
 
-Status: design draft. Anchors for all five rubrics are drafted. Numeric weights and size-band thresholds are not set yet.
+Status: design draft. Anchors for all five rubrics are drafted. Band thresholds and multiplier values are placeholders to be tuned on calibration.
 
 ## Principles
 
@@ -70,7 +70,7 @@ Out of scope:
 
 ### Pathways
 
-The researcher tags each fact with one pathway. Code takes the max across pathways.
+The researcher tags each fact with exactly one pathway. P1-P5 count equally. Code takes the highest pathway score as the base and applies a breadth multiplier when the person scores L2 or above in more than one pathway on independent facts (see Deterministic layer). This separates someone who contributes to several risk pathways, who acts as a risk multiplier, from someone who contributes to one.
 
 | Tag | Pathway | Examples of disregard for danger |
 |---|---|---|
@@ -94,10 +94,11 @@ The judge may only count these as "documented disregard":
 - DI-6: selling or releasing to actors with a documented abuse record
 - DI-7: climate disinformation, or contradicting the organization's own science
 - DI-8: pursuing removal of human control from lethal or nuclear decisions
+- DI-9: voting against safety or climate safeguards, or for their removal, as a legislator or official with a decisive vote
 
 ### Scale
 
-"Moderate scale" and "large scale" come from structured size bands extracted by the researcher (revenue, units, users, spend). Thresholds TBD.
+"Moderate scale" and "large scale" are band labels computed by code from raw numbers the researcher extracts (see Bands in the Deterministic layer). The judge sees the label in the dossier and never estimates scale itself.
 
 ### Severity anchors
 
@@ -106,7 +107,7 @@ The judge may only count these as "documented disregard":
 | 0 | No documented link, or out of scope (passive holdings) |
 | 1 | Participates (employment, contracting, services, small-scale funding), with no documented disregard for risk |
 | 2 | Participates with at least one disregard indicator, or directly builds, deploys or sells the harmful capability at moderate scale |
-| 3 | Shapes direction: sets strategy, allocates major capital, or lobbies or legislates (with resources) to expand the activity or weaken safeguards, with documented disregard |
+| 3 | Shapes direction: sets strategy, allocates major capital, lobbies (with resources) or legislates (including voting) to expand the activity or weaken safeguards, with documented disregard |
 | 4 | Founds or leads an Agent of Doom, or uses state or corporate power to expand it at scale while overriding internal or external safety warnings |
 
 ### Worked examples (hypothetical archetypes)
@@ -128,7 +129,7 @@ Level 0 in every pathway: index-fund manager, pension trustee, journalist coveri
 3. **Rank-and-file researcher writing op-eds against regulation:** P1 L2 (speech cap).
 4. **Registered lobbyist hired to block AI regulation:** P1 L3. Not an employee, but they choose the client and the work is regulatory obstruction. Agency is high.
 5. **Investor with a board seat directing strategy:** L3. A large stake without control: L0.
-6. **Legislator with a single vote against safeguards:** unresolved. A pattern with industry funding is L3 (legislating). A single vote is probably L2.
+6. **Legislator voting on safeguards:** L3, even for a single vote (DI-9). A legislator's vote carries orders of magnitude more influence than a citizen's. The vote must be on legislation whose main purpose is a safeguard or its removal, not an omnibus rider. A vote for safeguards is an R5 candidate. Citizens' votes are never scored.
 
 ### Evidence checklist (researcher)
 
@@ -264,7 +265,7 @@ Costly, verified actions that reduce catastrophic risk, share power, or restrain
 - **Pledges are not actions.** Only executed actions count.
 - **Cost is relative to means.** The researcher records cost as a share of the person's resources or career at stake. A $1M donation by a billionaire is not a costly act.
 - Not counted: philanthropy that also buys influence against safety or democratic checks (for example funding groups that lobby against regulation).
-- Each entry is tagged with the rubric it offsets (R1-R4). Offsets across rubrics count less than within the same rubric.
+- Each entry is tagged with the rubric it offsets (R1-R4), and with the pathway for R1. Offsets apply only within that rubric (and pathway). Harms to different victims are not fungible: safety funding does not offset fraud.
 
 ### Evidence checklist (researcher)
 
@@ -301,14 +302,93 @@ Costly, verified actions that reduce catastrophic risk, share power, or restrain
 - Evidence tier of each item
 - For R5: cost as a share of means
 
+### Bands
+
+The researcher extracts raw numbers with units and sources. Code maps them to four categorical bands with fixed lookup tables, on a log scale because power grows by orders of magnitude. If several metrics exist, code uses the highest band. If none exist, the band is `unknown` and confidence drops. Thresholds below are placeholders.
+
+| Band | Org revenue or budget | Org headcount | Users | Individual net worth |
+|---|---|---|---|---|
+| Small | < $10M | < 100 | < 100k | < $10M |
+| Moderate | $10M - $1B | 100 - 10k | 100k - 10M | $10M - $1B |
+| Large | $1B - $100B | 10k - 200k | 10M - 1B | $1B - $100B |
+| Systemic | > $100B | > 200k | > 1B | > $100B |
+
+Office or role is ordinal instead: none or local, regional, national legislator or minister, head of state or government, leader of a frontier AI lab or a nuclear-armed state's military.
+
+The pipeline runs: researcher extracts raw numbers, code computes band labels, judge receives the labels.
+
 ### Aggregation principles (numbers to be tuned on calibration)
 
 - Do not average axes. Use a max-like combination (for example a weighted probabilistic OR) so one catastrophic act is not diluted.
 - Power and agency multiply the harm axes (R1-R4).
-- R5 only reduces the score, up to a fixed cap. In-axis offsets count more than cross-axis offsets.
-- Missing evidence means unknown. Report coverage. Return `unrated` if R1 and R2 both have no usable evidence.
+- R1 breadth multiplier: base is the highest pathway score. Each additional pathway scored L2 or above on independent facts raises it by a diminishing step (placeholder: x1.0, x1.15, x1.25, x1.3, x1.35). One fact is tagged to one pathway, so a single act cannot count twice.
+- R5 offsets apply only within the tagged rubric (and pathway for R1), cannot reduce an axis below 0, and together can lower the final tier by at most one level.
+- Score severity, not volume of evidence. A famous person with a thick dossier must not score higher just because more was written about them.
+- Evidence on a single rubric is enough to rate someone (see Rating rule below).
 - Confidence is computed from evidence tiers and counts, not from the judge's self-report.
-- Final tiers: Ultimate, Major, Unwilling, Minor, Not a Dick. "Unwilling" means a high harm score with low agency and power.
+- Final score and tiers: see the next section.
+
+### Agency and power multipliers (placeholders)
+
+| Agency | Value | Who |
+|---|---|---|
+| Low | 0.5 | Rank and file, no discretion |
+| Medium | 0.75 | Team lead or manager with some discretion |
+| High | 1.0 | Executive, owner, elected official, independent professional (including hired lobbyists) |
+
+| Power | Multiplier | Band or office |
+|---|---|---|
+| Minimal | 1.0 | Small band, none or local office |
+| Some | 1.05 | Moderate band, regional office |
+| High | 1.15 | Large band, national legislator or minister |
+| Systemic | 1.25 | Systemic band, head of state or government, frontier lab leader, nuclear-armed state's military leader |
+
+## Final score and tiers (draft)
+
+Tuned only on hypothetical archetypes. Recency decay and confidence are not yet in the formula.
+
+For each harm rubric i in R1-R4:
+
+1. `h_i = (severity_i / 4) x agency x power`, capped at 1. For R1, multiply by the breadth multiplier before the cap.
+2. R5 in-axis offset: `h_i = h_i x (1 - 0.4 x r5_i / 4)`, where `r5_i` is the highest R5 level tagged to that rubric (and pathway for R1).
+3. Combine: `m = max(h_i)`, `rest = min(sum of the other h_i, 1)`, `S = 100 x (m + 0.25 x (1 - m) x rest)`. The worst axis dominates, and the others add with diminishing returns. A plain probabilistic OR was tested and rejected: four minor offenses (L1 on all four) scored 68, which is too high.
+
+Tiers from `S`:
+
+| Tier | Rule |
+|---|---|
+| Not a Dick | S < 10, subject to the rating rule |
+| Minor Dick | 10 <= S < 40 |
+| Unwilling Dick | Agency is low (0.5), R1 severity >= 1, no other rubric at L2 or above, and S < 40. Takes precedence over Minor. |
+| Major Dick | 40 <= S < 85, or S >= 85 without systemic power |
+| Ultimate Dick | S >= 85 **and** systemic power |
+
+Ultimate requires systemic power, echoing the README ("wields immense power"). R5 can lower the final tier by at most one level versus the tier computed without R5. Ordinal order: Ultimate, Major, Unwilling, Minor, Not.
+
+### Sanity check (archetypes)
+
+| Archetype | S | Tier |
+|---|---|---|
+| Founder-CEO of a frontier lab, R1 L4, systemic power, three pathways | 100 | Ultimate |
+| Lab VP, R1 L3, large | 86 | Major |
+| Same VP with in-axis R5 L3 (for example safety whistleblowing) | 60 | Major |
+| Legislator, one decisive vote against safeguards (R1 L3, national) | 86 | Major |
+| Team lead who signed off a risky release (R1 L2, medium agency) | 39 | Minor (edge of the cut) |
+| Rank and file, R1 L1 | 13 | Unwilling |
+| Rank and file, R1 L2 | 25 | Unwilling |
+| Rank and file with R1 L2 and R4 L2 | 30 | Minor |
+| Founder convicted of large-scale fraud (R4 L4), small organization | 100 | Major (no systemic power) |
+| L1 on all four rubrics, high agency | 39 | Minor |
+| L2 on all four rubrics, high agency | 63 | Major |
+| Head of state, R2 L4, R1 L3, R3 L2, R4 L1 | 100 | Ultimate |
+
+### Rating rule
+
+- **One rubric is enough to rate.** If the only evidence found is on one rubric, the person is rated on that rubric. Evidence of harm is provable.
+- **Minimum evidence:** at least one Tier 1 or Tier 2 item. Tier 3 alone cannot rate anyone.
+- **Absence is not provable.** Rubrics with no evidence contribute 0, so the score is a floor. Output states coverage ("rated on 2 of 4 harm rubrics").
+- **"Not a Dick" needs coverage:** every harm rubric (R1-R4) must have been researched with a logged search that found nothing. A researcher that failed or found no data returns `insufficient_evidence`, which is different from a documented zero. If coverage is incomplete, the label is "No harm found (partial coverage)", not "Not a Dick".
+- **No evidence on any rubric:** `unrated`.
 
 ## Decisions log
 
@@ -321,12 +401,20 @@ Costly, verified actions that reduce catastrophic risk, share power, or restrain
 - No single-act cap for now. Revisit after calibration.
 - Personal wealth and consumption are not scored. Wealth is a power modifier.
 - Allegations never score. Settlements without admission cap at L2.
+- Pathways P1-P5 weigh equally. Contributing to several pathways raises R1 through a breadth multiplier.
+- Scale is categorical (four log bands) and computed by code from researcher-extracted numbers.
+- R5 offsets in-axis only, with a global cap of one tier.
+- Output includes every per-rubric score with evidence, plus the final tier.
+- Scope is figures with enough public data. Below a minimum evidence threshold the result is `unrated`. This is an inherent limitation.
+- A legislator voting on safeguards scores L3 (DI-9).
+- A vote and the donations received are separate facts, scored separately.
+- Evidence on a single rubric is enough to rate. "Not a Dick" requires logged searches on all harm rubrics.
+- Score combination is max-dominant with diminishing additions, not a plain probabilistic OR.
+- Ultimate Dick requires systemic power.
 
 ## Open questions
 
-- Pathway weights: should P1-P3 count equally against P4-P5?
-- Size-band thresholds for "moderate" and "large" scale.
-- How much should cross-axis R5 offsets count versus in-axis?
-- Whether to publish per-rubric scores only, or also the final tier.
-- Scope limit: public figures only?
-- Legislator with a single vote: L2 or L3?
+- Breadth multiplier values, band thresholds, agency and power multipliers, and the tier cut points (all placeholders, to be tuned on calibration).
+- Recency decay: how fast old acts fade. Not yet in the formula.
+- Low priority: R1 anchors L1-L2 describe junior roles and the agency multiplier then discounts again. Junior roles are not the target population, so this is parked.
+- Whether the team-lead archetype (S = 39) should sit in Minor or Major.

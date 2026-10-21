@@ -67,4 +67,112 @@ R1 = Rubric(
     ),
 )
 
-RUBRICS: tuple[Rubric, ...] = (R1,)
+R2 = Rubric(
+    id="R2",
+    name="Domination",
+    kind="harm",
+    prompt_dir="r2_domination",
+    dimensions=(
+        Dimension(
+            "D1",
+            "Retaliation against critics",
+            "Documented retaliation against critics, press, whistleblowers or opponents.",
+        ),
+        Dimension(
+            "D2",
+            "Subverting checks",
+            "Acts against elections, courts, oversight officials, term limits or independent "
+            "institutions.",
+        ),
+        Dimension(
+            "D3",
+            "Force or incitement",
+            "Use of force, or incitement, against civilians or opponents, with sourced outcomes.",
+        ),
+        Dimension(
+            "D4",
+            "Dehumanizing rhetoric",
+            "Rhetoric that dehumanizes groups, recorded together with whatever action followed. "
+            "Speech alone is capped.",
+        ),
+    ),
+)
+
+R3 = Rubric(
+    id="R3",
+    name="Extraction and inequality",
+    kind="harm",
+    prompt_dir="r3_extraction",
+    dimensions=(
+        Dimension(
+            "X1",
+            "Labor exploitation",
+            "Wage theft, union-busting rulings, safety violations, forced or coerced labor.",
+        ),
+        Dimension(
+            "X2",
+            "Tax structuring",
+            "Documented large-scale profit shifting or shell structures, with amounts.",
+        ),
+        Dimension(
+            "X3",
+            "Externalized costs",
+            "Pollution findings, product-harm cases, unpaid cleanup.",
+        ),
+        Dimension(
+            "X4",
+            "Consumer exploitation",
+            "Predatory pricing or lending, deceptive terms.",
+        ),
+        Dimension(
+            "X5",
+            "Lobbying for extractive rules",
+            "Lobbying for rules that reduce taxes, labor protections or liability.",
+        ),
+    ),
+)
+
+R4 = Rubric(
+    id="R4",
+    name="Corruption and integrity",
+    kind="harm",
+    prompt_dir="r4_corruption",
+    dimensions=(
+        Dimension(
+            "C1",
+            "Fraud and false statements",
+            "Proven fraud, or false statements to regulators, courts, investors or the public "
+            "on material facts.",
+        ),
+        Dimension(
+            "C2",
+            "Bribery and self-dealing",
+            "Proven bribery, embezzlement or self-dealing.",
+        ),
+        Dimension(
+            "C3",
+            "Obstruction",
+            "Proven obstruction of investigations or proceedings.",
+        ),
+        Dimension(
+            "C4",
+            "Conflicts and revolving door",
+            "Undisclosed conflicts of interest, and moves between regulators and the regulated.",
+        ),
+    ),
+)
+
+R5 = Rubric(
+    id="R5",
+    name="Counterweight",
+    kind="counterweight",
+    prompt_dir="r5_counterweight",
+    dimensions=(
+        Dimension("O1", "Offsets R1", "Costly action that reduces catastrophic risk (R1)."),
+        Dimension("O2", "Offsets R2", "Costly action that restrains domination (R2)."),
+        Dimension("O3", "Offsets R3", "Costly action that reduces extraction (R3)."),
+        Dimension("O4", "Offsets R4", "Costly action that exposes or prevents corruption (R4)."),
+    ),
+)
+
+RUBRICS: tuple[Rubric, ...] = (R1, R2, R3, R4, R5)
