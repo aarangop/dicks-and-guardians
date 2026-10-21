@@ -14,7 +14,15 @@ This project is simple. Give a name, find out if they're a Dick, decide for your
 
 ## How it works
 
-API based first. Implements an agent to collect information about someone from the interwebz, then applies defined rubrics of "Dickness", to return a Dick score using LLM-as-judge.
+API based first. For a given name the service runs a pipeline:
+
+1. **Resolve** who the person is (public figures only, ambiguous names are disambiguated).
+2. **Research**: one agent per rubric collects sourced evidence from the web, in parallel.
+3. **Judge**: one LLM judge per rubric rates documented behavior from 0 to 4, citing evidence.
+4. **Score**: a deterministic function combines the verdicts with the person's role and power into a tier.
+5. **Summarize** the result, with every score and its evidence.
+
+We judge behaviors and outcomes, never character. The rubrics are catastrophic-risk complicity (the Agents of Doom), domination, extraction and inequality, corruption, and a counterweight rubric for costly actions that reduce harm. See [docs/METHODOLOGY.md](docs/METHODOLOGY.md) for the workflow and scoring method, and [docs/RUBRIC.md](docs/RUBRIC.md) for the rubric anchors and parameters.
 
 We'll calibrate with people like:
 
@@ -27,10 +35,12 @@ We'll calibrate with people like:
 ## Dickness score
 
 - Ultimate Dick: Wields immense power, supports the agents of doom (big tech, military industrial complex, and fossil fuel industry) through their investments or political power.
-- Major Dick: 
-- Unwilling Dick: 
-- Minor Dick:
-- Not a Dick:
+- Major Dick: Serious documented harm, in a decision-making role or with significant power.
+- Unwilling Dick: Contributes from inside the machine with little agency (rank and file), and has no other serious findings.
+- Minor Dick: Limited or small-scale documented harm.
+- Not a Dick: Searched across the harm rubrics, and nothing was found.
+
+Scores come from documented acts, weighted by the person's agency and power, and reduced only by costly counterweight actions. Details in [docs/METHODOLOGY.md](docs/METHODOLOGY.md).
 
 ## Example output
 
