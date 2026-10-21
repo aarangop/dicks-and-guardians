@@ -9,6 +9,7 @@ frozen, so it is hashable and can be the cache key). Agents are cheap to build
 (~1 ms) and take unhashable arguments, so they are built per request.
 """
 
+from collections.abc import Sequence
 from functools import lru_cache
 from typing import Annotated
 
@@ -22,16 +23,14 @@ from tavily import TavilyClient
 
 from dont_be_a_dick.agents import build_research_agent
 from dont_be_a_dick.agents.judge import LangChainJudge
-from dont_be_a_dick.agents.researcher import LangChainResearcher
+from dont_be_a_dick.agents.researcher import LangChainResearcher, ResearchBudget
 from dont_be_a_dick.agents.resolver import LangChainSubjectResolver
 from dont_be_a_dick.agents.summarizer import LangChainSummarizer
 from dont_be_a_dick.config import Settings
-from dont_be_a_dick.domain.rubrics import RUBRICS
+from dont_be_a_dick.domain.rubrics import RUBRICS, Rubric
 from dont_be_a_dick.tools.web_fetch import make_web_fetch_tool
 from dont_be_a_dick.tools.web_search import make_web_search_tool
 from dont_be_a_dick.workflows.scoring import ScoringPipeline
-
-DEFAULT_MODEL = "claude-sonnet-5-5"
 
 
 def _require(secret: SecretStr, env_var: str) -> SecretStr:
@@ -66,8 +65,9 @@ TavilyClientDep = Annotated[TavilyClient, Depends(get_tavily_client)]
 @lru_cache
 def get_chat_model(settings: SettingsDep) -> BaseChatModel:
     return ChatAnthropic(
-        model_name=DEFAULT_MODEL,
+        model_name=settings.model_for("chat"),
         timeout=60.0,
+        max_retries=settings.anthropic_max_retries,
         stop=None,
         api_key=_require(settings.anthropic_api_key, "DBAD_ANTHROPIC_API_KEY"),
     )
@@ -82,25 +82,26 @@ def _anthropic_model(settings: Settings, model_name: str) -> BaseChatModel:
     return ChatAnthropic(
         model_name=model_name,
         timeout=120.0,
+        max_retries=settings.anthropic_max_retries,
         stop=None,
         api_key=_require(settings.anthropic_api_key, "DBAD_ANTHROPIC_API_KEY"),
     )
 
 
 def get_researcher_model(settings: SettingsDep) -> BaseChatModel:
-    return _anthropic_model(settings, settings.researcher_model)
+    return _anthropic_model(settings, settings.model_for("researcher"))
 
 
 def get_judge_model(settings: SettingsDep) -> BaseChatModel:
-    return _anthropic_model(settings, settings.judge_model)
+    return _anthropic_model(settings, settings.model_for("judge"))
 
 
 def get_resolver_model(settings: SettingsDep) -> BaseChatModel:
-    return _anthropic_model(settings, settings.resolver_model)
+    return _anthropic_model(settings, settings.model_for("resolver"))
 
 
 def get_summarizer_model(settings: SettingsDep) -> BaseChatModel:
-    return _anthropic_model(settings, settings.summarizer_model)
+    return _anthropic_model(settings, settings.model_for("summarizer"))
 
 
 # --- tools ------------------------------------------------------------------
@@ -143,8 +144,10 @@ def get_researcher(
     model: Annotated[BaseChatModel, Depends(get_researcher_model)],
     web_search: WebSearchToolDep,
     web_fetch: WebFetchToolDep,
+    settings: SettingsDep,
 ) -> LangChainResearcher:
-    return LangChainResearcher(model, [web_search, web_fetch])
+    budget = ResearchBudget(settings.research_max_searches, settings.research_max_fetches)
+    return LangChainResearcher(model, [web_search, web_fetch], budget=budget)
 
 
 def get_judge(model: Annotated[BaseChatModel, Depends(get_judge_model)]) -> LangChainJudge:
@@ -158,35 +161,52 @@ def get_summarizer(
     return LangChainSummarizer(model)
 
 
-def get_scoring_pipeline(
-    resolver: Annotated[LangChainSubjectResolver, Depends(get_subject_resolver)],
-    researcher: Annotated[LangChainResearcher, Depends(get_researcher)],
-    judge: Annotated[LangChainJudge, Depends(get_judge)],
-    summarizer: Annotated[LangChainSummarizer, Depends(get_summarizer)],
+def _assemble_pipeline(
+    resolver: LangChainSubjectResolver,
+    researcher: LangChainResearcher,
+    judge: LangChainJudge,
+    summarizer: LangChainSummarizer,
+    settings: Settings,
+    rubrics: Sequence[Rubric],
 ) -> ScoringPipeline:
     return ScoringPipeline(
         resolver=resolver,
         researcher=researcher,
         judge=judge,
         summarizer=summarizer,
-        rubrics=RUBRICS,
+        rubrics=rubrics,
+        max_concurrent_research=settings.max_concurrent_research,
     )
+
+
+def get_scoring_pipeline(
+    resolver: Annotated[LangChainSubjectResolver, Depends(get_subject_resolver)],
+    researcher: Annotated[LangChainResearcher, Depends(get_researcher)],
+    judge: Annotated[LangChainJudge, Depends(get_judge)],
+    summarizer: Annotated[LangChainSummarizer, Depends(get_summarizer)],
+    settings: SettingsDep,
+) -> ScoringPipeline:
+    return _assemble_pipeline(resolver, researcher, judge, summarizer, settings, RUBRICS)
 
 
 ScoringPipelineDep = Annotated[ScoringPipeline, Depends(get_scoring_pipeline)]
 
 
-def build_scoring_pipeline(settings: Settings | None = None) -> ScoringPipeline:
+def build_scoring_pipeline(
+    settings: Settings | None = None, rubrics: Sequence[Rubric] = RUBRICS
+) -> ScoringPipeline:
     """Wire the whole pipeline outside FastAPI (scripts, integration tests).
 
-    Mirrors the `Depends` graph above; keep the two in step.
+    Mirrors the `Depends` graph above; keep the two in step. `rubrics` lets a caller run a subset.
     """
     settings = settings or get_settings()
     client = get_tavily_client(settings)
     web_search, web_fetch = get_web_search_tool(client), get_web_fetch_tool(client)
-    return get_scoring_pipeline(
+    return _assemble_pipeline(
         get_subject_resolver(get_resolver_model(settings), web_search),
-        get_researcher(get_researcher_model(settings), web_search, web_fetch),
+        get_researcher(get_researcher_model(settings), web_search, web_fetch, settings),
         get_judge(get_judge_model(settings)),
         get_summarizer(get_summarizer_model(settings)),
+        settings,
+        rubrics,
     )

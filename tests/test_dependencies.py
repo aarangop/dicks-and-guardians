@@ -90,6 +90,7 @@ def test_scoring_pipeline_builds_from_settings(settings: Settings) -> None:
 
 
 def test_role_models_are_shared_per_model_name(settings: Settings) -> None:
-    # researcher and judge default to the same model, so they share one client
+    # roles without an override share the default model, so they share one client
     assert deps.get_researcher_model(settings) is deps.get_judge_model(settings)
-    assert deps.get_resolver_model(settings) is not deps.get_judge_model(settings)
+    overridden = Settings(**{**settings.model_dump(), "resolver_model": "other-model"})
+    assert deps.get_resolver_model(overridden) is not deps.get_judge_model(overridden)
