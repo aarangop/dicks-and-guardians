@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dicks and Guardians</title>
+  <meta name="description" content="Final scores for public figures: documented harm, weighted by power, with the sources to check.">
+  <!-- Hobby project about named people: keep it out of search engines. Delete this line to allow indexing. -->
+  <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#app">Skip to content</a>
+  <header class="top">
+    <div id="ticker" class="ticker" aria-label="High scores"></div>
+    <a class="logo" href="#/" aria-label="Dicks and Guardians, home">
+      <span class="l1">DICKS</span>
+      <span class="l2">&amp; GUARDIANS</span>
+    </a>
+    <nav aria-label="Main">
+      <a href="#/" data-nav="roster">Roster</a>
+      <a href="#/guardians" data-nav="guardians">Guardians</a>
+      <a href="#/dicks" data-nav="dicks">Dicks</a>
+      <a href="#/ambivalent" data-nav="ambivalent">Ambivalent</a>
+      <a href="#/about" data-nav="about">How to play</a>
+    </nav>
+  </header>
+
+  <main id="app" tabindex="-1"><p class="loading">LOADING<span class="blink">...</span></p></main>
+
+  <footer class="foot">
+    <p id="data-info"></p>
+    <p>The bar is catastrophic risk: a clean score or a Guardian tier here may still be a dick in other ways. Scores are model-generated, not verdicts. <a href="#/about">Read the full bar.</a></p>
+  </footer>
+
+  <noscript><p class="loading">This site needs JavaScript.</p></noscript>
+  <script src="data/people.js"></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
