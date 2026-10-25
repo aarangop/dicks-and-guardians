@@ -86,9 +86,10 @@ def test_research_agent_failure_is_a_502(client: TestClient, use_agent) -> None:
 def test_research_with_real_services(client: TestClient) -> None:
     settings = Settings()
     if not (
-        settings.anthropic_api_key.get_secret_value() and settings.tavily_api_key.get_secret_value()
+        settings.openrouter_api_key.get_secret_value()
+        and settings.tavily_api_key.get_secret_value()
     ):
-        pytest.skip("DBAD_ANTHROPIC_API_KEY and DBAD_TAVILY_API_KEY must be set")
+        pytest.skip("DBAD_OPENROUTER_API_KEY and DBAD_TAVILY_API_KEY must be set")
 
     response = client.post("/research", json={"name": "Peter Singer"})
 

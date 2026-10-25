@@ -1,0 +1,81 @@
+@host = http://localhost:8000
+
+### Health check
+GET {{host}}/health
+
+### Start a scoring run for any name: VS Code asks for the name when you send it.
+# Resolves the name, then researches in the background.
+# Expect 202 {"id": "<slug>", "status": "running"} and a Location header.
+# The response is saved as `submit`, so the requests below can reuse its id.
+# @prompt person Name of the person to score
+# @prompt descriptor Optional descriptor to disambiguate (leave empty for none)
+# @name submit
+POST {{host}}/score
+Content-Type: application/json
+
+{
+  "name": "{{person}}",
+  "descriptor": "{{descriptor}}"
+}
+
+### Poll the latest run started above, using the id saved in `submit`.
+# status: running -> done | failed. The report is in `report` once done.
+# Needs a 202 from a `submit` request earlier in this VS Code session.
+GET {{host}}/score/{{submit.response.body.$.id}}
+
+### Poll any id: VS Code asks for it (the slug from a 202 response)
+# @prompt id Run id, e.g. luiz-inacio-lula-da-silva
+GET {{host}}/score/{{id}}
+
+### Rerun the latest subject even if it is already done (costs a full research run)
+# @prompt person Name of the person to rerun
+POST {{host}}/score?refresh=true
+Content-Type: application/json
+
+{
+  "name": "{{person}}"
+}
+
+### Ambiguous name: expect 409 with candidates, nothing stored
+POST {{host}}/score
+Content-Type: application/json
+
+{
+  "name": "Peter Singer"
+}
+
+### Disambiguated with a descriptor: expect 202
+POST {{host}}/score
+Content-Type: application/json
+
+{
+  "name": "Peter Singer",
+  "descriptor": "Australian moral philosopher"
+}
+
+### Not a public figure: expect 422 with a reason, nothing stored
+POST {{host}}/score
+Content-Type: application/json
+
+{
+  "name": "John Q. Nobody"
+}
+
+### Blank name: expect 422 before any model call
+POST {{host}}/score
+Content-Type: application/json
+
+{
+  "name": "   "
+}
+
+### Unknown id: expect 404
+GET {{host}}/score/nobody
+
+### The plain chat research agent (unchanged, synchronous, no storage)
+POST {{host}}/research
+Content-Type: application/json
+
+{
+  "name": "Lula da Silva"
+}
