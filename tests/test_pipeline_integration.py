@@ -1,4 +1,4 @@
-"""End-to-end runs of the real pipeline (Anthropic + Tavily). Slow and costs credits."""
+"""End-to-end runs of the real pipeline (OpenRouter + Tavily). Slow and costs credits."""
 
 import pytest
 
@@ -15,9 +15,10 @@ pytestmark = pytest.mark.integration
 def pipeline():
     settings = Settings()
     if not (
-        settings.anthropic_api_key.get_secret_value() and settings.tavily_api_key.get_secret_value()
+        settings.openrouter_api_key.get_secret_value()
+        and settings.tavily_api_key.get_secret_value()
     ):
-        pytest.skip("DBAD_ANTHROPIC_API_KEY and DBAD_TAVILY_API_KEY must be set")
+        pytest.skip("DBAD_OPENROUTER_API_KEY and DBAD_TAVILY_API_KEY must be set")
     # One rubric is enough to exercise the machinery; the research agents differ only by prompt.
     return deps.build_scoring_pipeline(settings, rubrics=(R1,))
 

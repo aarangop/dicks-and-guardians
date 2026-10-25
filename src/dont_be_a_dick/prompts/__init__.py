@@ -9,17 +9,18 @@ the research budget.
 
 import re
 from importlib.resources import files
+from pathlib import Path
 from typing import Literal
 
 from dont_be_a_dick.domain.rubrics import Rubric
 
 _COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
 
-RubricRole = Literal["researcher", "judge"]
+RubricRole = Literal["researcher", "judge", "judge_benefit"]
 
 
-def _read(*parts: str) -> str:
-    resource = files(__name__)
+def _read(*parts: str, root: Path | None = None) -> str:
+    resource = root if root is not None else files(__name__)
     for part in parts:
         resource = resource / part
     text = resource.read_text(encoding="utf-8")
@@ -27,14 +28,20 @@ def _read(*parts: str) -> str:
 
 
 def rubric_prompt(
-    rubric: Rubric, role: RubricRole, *, max_searches: int = 10, max_fetches: int = 5
+    rubric: Rubric,
+    role: RubricRole,
+    *,
+    max_searches: int = 10,
+    max_fetches: int = 5,
+    root: Path | None = None,
 ) -> str:
-    """Prompt for a rubric's researcher or judge, with the rubric's dimensions filled in.
+    """Prompt for a rubric's researcher or judge (harm or benefit side), dimensions filled in.
 
     The budget numbers fill the researcher's `Budget` section, so the prompt always states the
-    limit the agent is actually held to.
+    limit the agent is actually held to. `root` reads a prompt variant laid out like this
+    package (`<root>/<rubric.prompt_dir>/<role>.md`), which is how evals try prompt changes.
     """
-    text = _read(rubric.prompt_dir, f"{role}.md")
+    text = _read(rubric.prompt_dir, f"{role}.md", root=root)
     return (
         text.replace("{dimension_list}", rubric.dimension_list())
         .replace("{dimension_tags}", ", ".join(f"`{tag}`" for tag in rubric.tags))

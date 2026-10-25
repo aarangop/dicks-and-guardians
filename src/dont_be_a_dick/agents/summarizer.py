@@ -8,6 +8,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from dont_be_a_dick.domain.schemas import EvidenceItem, ScoreBreakdown, Subject
 from dont_be_a_dick.prompts import shared_prompt
+from dont_be_a_dick.tracing import callbacks
 
 
 class LangChainSummarizer:
@@ -38,6 +39,7 @@ class LangChainSummarizer:
         response = await self._model.ainvoke(
             [SystemMessage(self._prompt), HumanMessage(json.dumps(payload, indent=2))],
             config={
+                "callbacks": callbacks(),
                 "run_name": "summarize",
                 "tags": ["summarize"],
                 "metadata": {"subject": subject.name},

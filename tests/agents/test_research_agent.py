@@ -93,18 +93,19 @@ def test_agent_with_real_web_search_tool_and_fake_tavily_client() -> None:
 
 @pytest.mark.integration
 def test_real_research_agent_searches_the_web_and_answers() -> None:
-    """Runs the real agent (Anthropic + Tavily) through the production dependency chain."""
+    """Runs the real agent (OpenRouter + Tavily) through the production dependency chain."""
     settings = Settings()
     if not (
-        settings.anthropic_api_key.get_secret_value() and settings.tavily_api_key.get_secret_value()
+        settings.openrouter_api_key.get_secret_value()
+        and settings.tavily_api_key.get_secret_value()
     ):
-        pytest.skip("DBAD_ANTHROPIC_API_KEY and DBAD_TAVILY_API_KEY must be set")
+        pytest.skip("DBAD_OPENROUTER_API_KEY and DBAD_TAVILY_API_KEY must be set")
     agent = deps.get_research_agent(
         deps.get_chat_model(settings),
         deps.get_web_search_tool(deps.get_tavily_client(settings)),
     )
 
-    result = ask(agent, "Research this person: Peter Singer")
+    result = ask(agent, "Elon Musk")
     messages = result["messages"]
 
     # The model decided to search...

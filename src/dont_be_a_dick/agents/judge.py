@@ -10,15 +10,16 @@ from pydantic import ValidationError
 
 from dont_be_a_dick.domain.evidence import VerdictError, check_verdict
 from dont_be_a_dick.domain.rubrics import Rubric
-from dont_be_a_dick.domain.schemas import Dossier, JudgeVerdict
+from dont_be_a_dick.domain.schemas import Dossier, JudgeVerdict, Polarity
 from dont_be_a_dick.prompts import rubric_prompt
+from dont_be_a_dick.tracing import callbacks
 
 MAX_ATTEMPTS = 2
 """One answer plus one correction round when the verdict fails validation."""
 
 
-def _default_prompt(rubric: Rubric) -> str:
-    return rubric_prompt(rubric, "judge")
+def _default_prompt(rubric: Rubric, polarity: Polarity) -> str:
+    return rubric_prompt(rubric, "judge" if polarity == "harm" else "judge_benefit")
 
 
 class LangChainJudge:
@@ -28,7 +29,7 @@ class LangChainJudge:
         self,
         model: BaseChatModel,
         *,
-        prompt_for: Callable[[Rubric], str] = _default_prompt,
+        prompt_for: Callable[[Rubric, Polarity], str] = _default_prompt,
         structured_output_kwargs: Mapping[str, Any] | None = None,
     ) -> None:
         """`structured_output_kwargs` go to `with_structured_output`, e.g. a provider's `method`."""
@@ -37,17 +38,23 @@ class LangChainJudge:
         )
         self._prompt_for = prompt_for
 
-    async def judge(self, dossier: Dossier, rubric: Rubric) -> JudgeVerdict:
+    async def judge(
+        self, dossier: Dossier, rubric: Rubric, polarity: Polarity = "harm"
+    ) -> JudgeVerdict:
         if not dossier.items and not dossier.facts.roles:
             return JudgeVerdict(
                 rubric_id=rubric.id,
+                polarity=polarity,
                 insufficient_evidence=True,
                 rationale="The dossier contains no evidence and no documented roles.",
             )
 
         messages: list[BaseMessage] = [
-            SystemMessage(self._prompt_for(rubric)),
-            HumanMessage(f"Rubric: {rubric.id}\n\nDossier:\n{dossier.model_dump_json(indent=2)}"),
+            SystemMessage(self._prompt_for(rubric, polarity)),
+            HumanMessage(
+                f"Rubric: {rubric.id}\nSide: {polarity}\n\n"
+                f"Dossier:\n{dossier.model_dump_json(indent=2)}"
+            ),
         ]
         problems: list[str] = []
         for _ in range(MAX_ATTEMPTS):
@@ -55,15 +62,22 @@ class LangChainJudge:
                 verdict = await self._structured.ainvoke(
                     messages,
                     config={
-                        "run_name": f"judge:{rubric.id}",
-                        "tags": ["judge", rubric.id],
-                        "metadata": {"rubric": rubric.id, "subject": dossier.subject.name},
+                        "callbacks": callbacks(),
+                        "run_name": f"judge:{rubric.id}:{polarity}",
+                        "tags": ["judge", rubric.id, polarity],
+                        "metadata": {
+                            "rubric": rubric.id,
+                            "polarity": polarity,
+                            "subject": dossier.subject.name,
+                        },
                     },
                 )
             except (ValidationError, OutputParserException) as e:
                 problems = [f"invalid structure: {e}"]
             else:
-                problems = check_verdict(verdict, dossier, rubric)
+                # The side is decided by the caller, not by the model.
+                verdict = verdict.model_copy(update={"polarity": polarity})
+                problems = check_verdict(verdict, dossier, rubric, polarity)
                 if not problems:
                     return verdict
             messages.append(

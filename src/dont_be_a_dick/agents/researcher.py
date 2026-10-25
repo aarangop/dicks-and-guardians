@@ -2,6 +2,7 @@
 
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from typing import Any
 
 from langchain.agents.middleware import AgentMiddleware, ToolCallLimitMiddleware
 from langchain_core.language_models import BaseChatModel
@@ -12,6 +13,7 @@ from dont_be_a_dick.domain.evidence import build_dossier
 from dont_be_a_dick.domain.rubrics import Rubric
 from dont_be_a_dick.domain.schemas import Dossier, ResearchFindings, Subject
 from dont_be_a_dick.prompts import rubric_prompt
+from dont_be_a_dick.tracing import callbacks
 
 SEARCH_TOOL = "web_search"
 FETCH_TOOL = "web_fetch"
@@ -31,7 +33,7 @@ class ResearchBudget:
     """
 
     searches: int = 10
-    fetches: int = 5
+    fetches: int = 10
 
     @property
     def recursion_limit(self) -> int:
@@ -96,6 +98,7 @@ class LangChainResearcher:
             {"messages": [{"role": "user", "content": _request(subject, rubric)}]},
             config={
                 "recursion_limit": self._recursion_limit,
+                "callbacks": callbacks(),
                 "run_name": f"research:{rubric.id}",
                 "tags": ["research", rubric.id],
                 "metadata": {"rubric": rubric.id, "subject": subject.name},
@@ -104,7 +107,17 @@ class LangChainResearcher:
         findings = result.get("structured_response")
         if not isinstance(findings, ResearchFindings):
             raise ResearchError(f"researcher for {rubric.id} returned no structured findings")
-        return build_dossier(subject, rubric, findings)
+        return build_dossier(subject, rubric, findings, _searches_run(result["messages"]))
+
+
+def _searches_run(messages: Sequence[Any]) -> list[str]:
+    """The queries the agent sent to the search tool, in order, read from its own tool calls."""
+    return [
+        str(call["args"]["query"])
+        for message in messages
+        for call in getattr(message, "tool_calls", None) or []
+        if call["name"] == SEARCH_TOOL and "query" in call["args"]
+    ]
 
 
 def _request(subject: Subject, rubric: Rubric) -> str:

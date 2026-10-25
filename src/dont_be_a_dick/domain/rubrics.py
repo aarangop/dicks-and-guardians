@@ -1,7 +1,6 @@
 """Rubrics as data. Adding a rubric means adding a record here and a prompts/ directory."""
 
 from dataclasses import dataclass
-from typing import Literal
 
 
 @dataclass(frozen=True)
@@ -15,10 +14,15 @@ class Dimension:
 class Rubric:
     id: str
     name: str
-    kind: Literal["harm", "counterweight"]
     dimensions: tuple[Dimension, ...]
     prompt_dir: str
     """Directory under `prompts/` holding this rubric's researcher.md and judge.md."""
+    has_benefit: bool = False
+    """Whether the rubric has benefit anchors. If so, the directory also holds judge_benefit.md.
+
+    Every rubric has a harm side. The benefit side reuses the same dimensions and dossier, and is
+    judged and scored separately, never netted against harm.
+    """
 
     @property
     def tags(self) -> tuple[str, ...]:
@@ -32,8 +36,8 @@ class Rubric:
 R1 = Rubric(
     id="R1",
     name="Catastrophic-risk complicity",
-    kind="harm",
     prompt_dir="r1_catastrophic_risk",
+    has_benefit=True,
     dimensions=(
         Dimension(
             "P1",
@@ -70,7 +74,6 @@ R1 = Rubric(
 R2 = Rubric(
     id="R2",
     name="Domination",
-    kind="harm",
     prompt_dir="r2_domination",
     dimensions=(
         Dimension(
@@ -101,7 +104,6 @@ R2 = Rubric(
 R3 = Rubric(
     id="R3",
     name="Extraction and inequality",
-    kind="harm",
     prompt_dir="r3_extraction",
     dimensions=(
         Dimension(
@@ -135,7 +137,6 @@ R3 = Rubric(
 R4 = Rubric(
     id="R4",
     name="Corruption and integrity",
-    kind="harm",
     prompt_dir="r4_corruption",
     dimensions=(
         Dimension(
@@ -162,17 +163,4 @@ R4 = Rubric(
     ),
 )
 
-R5 = Rubric(
-    id="R5",
-    name="Counterweight",
-    kind="counterweight",
-    prompt_dir="r5_counterweight",
-    dimensions=(
-        Dimension("O1", "Offsets R1", "Costly action that reduces catastrophic risk (R1)."),
-        Dimension("O2", "Offsets R2", "Costly action that restrains domination (R2)."),
-        Dimension("O3", "Offsets R3", "Costly action that reduces extraction (R3)."),
-        Dimension("O4", "Offsets R4", "Costly action that exposes or prevents corruption (R4)."),
-    ),
-)
-
-RUBRICS: tuple[Rubric, ...] = (R1, R2, R3, R4, R5)
+RUBRICS: tuple[Rubric, ...] = (R1, R2, R3, R4)
