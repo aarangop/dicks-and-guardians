@@ -18,6 +18,7 @@ from dont_be_a_dick.domain.schemas import (
     Dossier,
     JudgeVerdict,
     NeedsDisambiguation,
+    Polarity,
     Refused,
     Resolved,
     ScoreBreakdown,
@@ -40,7 +41,7 @@ ScoreFn = Callable[
 class PipelineState:
     subject: Subject
     dossiers: dict[str, Dossier] = field(default_factory=dict)
-    verdicts: dict[str, JudgeVerdict] = field(default_factory=dict)
+    verdicts: dict[tuple[str, Polarity], JudgeVerdict] = field(default_factory=dict)
     failures: dict[str, str] = field(default_factory=dict)
     breakdown: ScoreBreakdown | None = None
 
@@ -67,16 +68,25 @@ class ScoringPipeline:
         self._config = config
         self._research_slots = asyncio.Semaphore(max_concurrent_research)
 
-    async def run(self, name: str, descriptor: str | None = None) -> ScoreOutcome:
+    async def resolve(self, name: str, descriptor: str | None = None) -> Resolved | ScoreOutcome:
+        """The quick first stage: who is meant, or why the request cannot proceed."""
         resolution = await self._resolver.resolve(name, descriptor)
         match resolution:
             case Refused():
                 return resolution
             case Ambiguous(candidates=candidates):
                 return NeedsDisambiguation(candidates=candidates)
-            case Resolved(subject=subject):
-                pass
+            case Resolved():
+                return resolution
 
+    async def run(self, name: str, descriptor: str | None = None) -> ScoreOutcome:
+        resolved = await self.resolve(name, descriptor)
+        if not isinstance(resolved, Resolved):
+            return resolved
+        return await self.score_subject(resolved.subject)
+
+    async def score_subject(self, subject: Subject) -> Scored:
+        """The slow stages for an already-resolved subject: research to summary."""
         state = PipelineState(subject=subject)
         await self.gather_dossiers(state)
         await self.judge_dossiers(state)
@@ -87,6 +97,7 @@ class ScoringPipeline:
             report=DickScoreReport(
                 subject=subject,
                 tier=state.breakdown.tier,
+                benefit_tier=state.breakdown.benefit_tier,
                 breakdown=state.breakdown,
                 evidence=[item for d in state.dossiers.values() for item in d.items],
                 summary=summary,
@@ -100,7 +111,7 @@ class ScoringPipeline:
         )
         for rubric, result in zip(self._rubrics, results, strict=True):
             if isinstance(result, BaseException):
-                self._record_failure(state, rubric, "research", result)
+                self._record_failure(state, rubric.id, "research", result)
             else:
                 state.dossiers[rubric.id] = result
 
@@ -110,16 +121,28 @@ class ScoringPipeline:
             return await self._researcher.research(subject, rubric)
 
     async def judge_dossiers(self, state: PipelineState) -> None:
-        rubrics = [r for r in self._rubrics if r.id in state.dossiers]
+        """One judge call per rubric and side. Each judge sees only its own side's findings."""
+        jobs: list[tuple[Rubric, Polarity]] = [
+            (rubric, polarity)
+            for rubric in self._rubrics
+            if rubric.id in state.dossiers
+            for polarity in (("harm", "benefit") if rubric.has_benefit else ("harm",))
+        ]
         results = await asyncio.gather(
-            *(self._judge.judge(state.dossiers[r.id], r) for r in rubrics),
+            *(
+                self._judge.judge(
+                    state.dossiers[rubric.id].with_polarity(polarity), rubric, polarity
+                )
+                for rubric, polarity in jobs
+            ),
             return_exceptions=True,
         )
-        for rubric, result in zip(rubrics, results, strict=True):
+        for (rubric, polarity), result in zip(jobs, results, strict=True):
             if isinstance(result, BaseException):
-                self._record_failure(state, rubric, "judging", result)
+                label = rubric.id if polarity == "harm" else f"{rubric.id} benefit"
+                self._record_failure(state, label, "judging", result)
             else:
-                state.verdicts[rubric.id] = result
+                state.verdicts[(rubric.id, polarity)] = result
 
     def score(self, state: PipelineState) -> None:
         breakdown = self._score(
@@ -141,10 +164,8 @@ class ScoringPipeline:
             return SUMMARY_UNAVAILABLE
 
     @staticmethod
-    def _record_failure(
-        state: PipelineState, rubric: Rubric, stage: str, error: BaseException
-    ) -> None:
+    def _record_failure(state: PipelineState, label: str, stage: str, error: BaseException) -> None:
         if isinstance(error, asyncio.CancelledError):
             raise error
-        logger.error("%s failed for %s: %r", stage, rubric.id, error)
-        state.failures[rubric.id] = f"{stage} failed ({type(error).__name__})"
+        logger.error("%s failed for %s: %r", stage, label, error)
+        state.failures[label] = f"{stage} failed ({type(error).__name__})"

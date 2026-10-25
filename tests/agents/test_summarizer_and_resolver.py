@@ -66,7 +66,6 @@ async def test_summarizer_returns_text_and_sends_evidence_ids_to_the_model() -> 
         agency=0.5,
         influence=0.5,
         harm_score=0.7,
-        counterweight_reduction=0,
         final_score=0.35,
         tier="minor",
         coverage=1,

@@ -33,7 +33,6 @@ FINDINGS = {
         },
     ],
     "facts": {"highest_office": "CEO"},
-    "queries_run": ["test person safety team"],
     "gaps": [],
 }
 
@@ -87,8 +86,33 @@ async def test_research_runs_tools_and_builds_a_dossier(web_search, searches) ->
 
 
 @pytest.mark.anyio
+async def test_queries_run_come_from_the_search_calls_not_the_model(web_search) -> None:
+    model = scripted(
+        call("web_search", {"query": "first"}, "1"),
+        call("web_search", {"query": "second"}, "2"),
+        call("ResearchFindings", FINDINGS, "3"),
+    )
+
+    dossier = await LangChainResearcher(model, [web_search]).research(SUBJECT, R1)
+
+    assert dossier.queries_run == ["first", "second"]
+
+
+@pytest.mark.anyio
+async def test_a_result_that_omits_a_field_is_sent_back_for_another_try(web_search) -> None:
+    partial = {"facts": {"highest_office": "CEO"}}  # no findings, no gaps
+    model = scripted(
+        call("ResearchFindings", partial, "1"), call("ResearchFindings", FINDINGS, "2")
+    )
+
+    dossier = await LangChainResearcher(model, [web_search]).research(SUBJECT, R1)
+
+    assert [i.id for i in dossier.items] == ["R1-E01"]
+
+
+@pytest.mark.anyio
 async def test_research_with_no_findings_is_a_valid_empty_dossier(web_search) -> None:
-    empty = {"findings": [], "gaps": ["nothing found"]}
+    empty = {"findings": [], "facts": {}, "gaps": ["nothing found"]}
     researcher = LangChainResearcher(scripted(call("ResearchFindings", empty, "1")), [web_search])
 
     dossier = await researcher.research(SUBJECT, R1)
@@ -114,7 +138,7 @@ async def test_system_prompt_comes_from_the_injected_provider(web_search) -> Non
         return "custom prompt"
 
     researcher = LangChainResearcher(
-        scripted(call("ResearchFindings", {"findings": []}, "1")),
+        scripted(call("ResearchFindings", {"findings": [], "facts": {}, "gaps": []}, "1")),
         [web_search],
         prompt_for=prompt_for,
     )

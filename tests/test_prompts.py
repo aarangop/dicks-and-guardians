@@ -21,6 +21,27 @@ def test_prompts_mention_every_dimension_and_have_no_leftovers(rubric, role) -> 
     assert "{dimension_tags}" not in text
 
 
+BENEFIT_RUBRICS = [r for r in RUBRICS if r.has_benefit]
+
+
+@pytest.mark.parametrize("rubric", BENEFIT_RUBRICS, ids=lambda r: r.id)
+def test_benefit_judge_prompt_covers_every_dimension_and_has_no_leftovers(rubric) -> None:
+    text = rubric_prompt(rubric, "judge_benefit")
+
+    for tag in rubric.tags:
+        assert f"`{tag}`" in text
+    assert "{dimension_tags}" not in text
+    assert "never netted" in text
+
+
+@pytest.mark.parametrize("rubric", BENEFIT_RUBRICS, ids=lambda r: r.id)
+def test_researcher_prompt_for_a_benefit_rubric_asks_for_both_sides(rubric) -> None:
+    text = rubric_prompt(rubric, "researcher")
+
+    assert "`benefit`" in text
+    assert "`harm`" in text
+
+
 def test_authoring_comments_are_stripped() -> None:
     from dont_be_a_dick.domain.rubrics import R1
 
@@ -40,3 +61,7 @@ def test_researcher_prompt_states_the_budget(rubric) -> None:
     assert "7 searches and 3 fetches" in text
     assert "{max_searches}" not in text
     assert "{max_fetches}" not in text
+
+
+def test_resolution_prompt_asks_for_a_canonical_name() -> None:
+    assert "canonical" in shared_prompt("subject_resolution")

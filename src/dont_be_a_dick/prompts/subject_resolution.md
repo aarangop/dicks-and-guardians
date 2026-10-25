@@ -4,6 +4,6 @@ Use `web_search` to check. Search the exact name on its own first, without addin
 
 Then return exactly one of:
 
-- **resolved**: the name (plus the descriptor, if given) clearly identifies one public figure. Return their full name and a short descriptor, such as "Australian moral philosopher".
+- **resolved**: the name (plus the descriptor, if given) clearly identifies one public figure. Return their canonical full name and a short descriptor, such as "Australian moral philosopher". The canonical name is the title of their English Wikipedia article, without honorifics or titles, and it does not depend on how the user spelled or shortened it: "Lula" and "Lula da Silva" both resolve to "Luiz Inácio Lula da Silva". The name is used as a stable identifier, so always give the same form for the same person.
 - **ambiguous**: two or more different public figures plausibly match. Return each as a candidate with a distinguishing descriptor. Do not guess.
 - **refused**: no notable public figure matches, or the person appears to be a private individual. Give a one-sentence reason. Never include personal details about a private person.

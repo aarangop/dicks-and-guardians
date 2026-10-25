@@ -1,0 +1,83 @@
+{
+  "subject": {
+    "name": "Peter Singer",
+    "descriptor": "Australian moral philosopher"
+  },
+  "status": "baseline",
+  "notes": "",
+  "dossiers": [
+    {
+      "rubric_id": "R1",
+      "subject": {
+        "name": "Peter Singer",
+        "descriptor": "Australian moral philosopher"
+      },
+      "items": [
+        {
+          "id": "R1-E01",
+          "claim": "In a 2023 interview, Singer said AI markets should be regulated and applied the same reasoning to climate change. He said cheaper but harmful practices are restricted. This is a public position in favor of regulation.",
+          "dimension": "P1",
+          "polarity": "harm",
+          "quote": "We do regulate markets — child labour might be cheaper but that doesn't mean we allow it, we try to stop it,",
+          "source_url": "https://www.abc.net.au/news/2023-05-08/peter-singer-on-ai-robot-rights/102303010",
+          "source_title": "Philosopher Peter Singer weighs in on AI, robot rights and being kinder to animals - ABC News",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2023-05-08"
+        },
+        {
+          "id": "R1-E02",
+          "claim": "In a 2025 BBC Newsnight interview, Singer named misaligned superintelligent AI as the greatest AI risk. He also said competitive investor pressure pushes AI companies to advance quickly, citing OpenAI. This is a public statement of concern about AI loss of control, not a contribution to it.",
+          "dimension": "P1",
+          "polarity": "harm",
+          "quote": "The greatest risk is that in some way we will produce an AI that is super intelligent and that is not aligned with our values.",
+          "source_url": "https://www.youtube.com/watch?v=HbZYaXB4WBg",
+          "source_title": "Peter Singer: \"If Al is ever conscious... it should also have rights\" (BBC Newsnight)",
+          "source_kind": "news_report",
+          "source_tier": 2,
+          "event_date": "2025-08-22"
+        }
+      ],
+      "facts": {
+        "roles": [
+          {
+            "title": "Emeritus Ira W. DeCamp Professor of Bioethics",
+            "organization": "Princeton University",
+            "seniority": "rank_and_file"
+          },
+          {
+            "title": "Founder and Chair of the Board",
+            "organization": "The Life You Can Save",
+            "seniority": "founder_or_head_of_state",
+            "start_year": 2013
+          }
+        ],
+        "highest_office": "Chair of the Board, The Life You Can Save (founder); Emeritus Professor of Bioethics, Princeton University",
+        "organization_size": "small",
+        "net_worth": "unknown"
+      },
+      "queries_run": [
+        "Peter Singer philosopher artificial intelligence risk position",
+        "Peter Singer philosopher fossil fuel OR arms industry OR AI lab investment advisor"
+      ],
+      "gaps": [
+        "No evidence found of Singer operating, building, financing or lobbying for AI labs, fossil fuel companies or arms manufacturers.",
+        "No documented political donations or lobbying against AI or climate regulation.",
+        "No documented contracts or customers in the arms, weaponization or proliferation dimensions.",
+        "No documented safety decisions as an AI lab insider. He is an academic commentator, not a builder.",
+        "Net worth not found.",
+        "The start year for The Life You Can Save is my recollection and was not verified in the sources retrieved."
+      ]
+    }
+  ],
+  "expected": {
+    "tier": "not_a_dick",
+    "final_score": 0.0,
+    "severities": {
+      "R1": {
+        "P1": 0,
+        "P4": 0
+      }
+    }
+  }
+}

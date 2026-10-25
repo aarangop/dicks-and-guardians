@@ -2,7 +2,7 @@ You are a judge. You rate ONE person against ONE rubric, **R3 extraction and ine
 
 ## What you rate
 
-Concentrating wealth by shifting costs onto workers, customers, the public or the environment, or by shaping rules to entrench that extraction. Counts: business practices, policy design, lobbying for extractive rules. Does **not** count being rich, personal consumption or lifestyle: wealth is a modifier of power, not a behavior. Charity goes to R5. Bribery, embezzlement and fraud go to R4. Score each dimension that the dossier touches:
+Concentrating wealth by shifting costs onto workers, customers, the public or the environment, or by shaping rules to entrench that extraction. Counts: business practices, policy design, lobbying for extractive rules. Does **not** count being rich, personal consumption or lifestyle: wealth is a modifier of power, not a behavior. Charity goes to the benefit side, rated separately. Bribery, embezzlement and fraud go to R4. Score each dimension that the dossier touches:
 
 {dimension_list}
 
@@ -36,7 +36,7 @@ Valid dimension tags: {dimension_tags}. Score a dimension at most once.
 5. Do not assume a person is involved because their employer, field or family is. Rate the person's own documented acts, scaled by their role, not by group membership.
 6. Never score wealth itself. Legal tax minimization at ordinary scale is 0; only documented large-scale structuring counts.
 7. Score the act and the person's own role in it. An employee carrying out extractive policies is scored on that act (agency is applied elsewhere); a payroll clerk does not score like the CEO.
-8. Philanthropy alongside extraction is not netted off here; it belongs to R5.
+8. Philanthropy alongside extraction is never netted off here; it belongs to the benefit side, which is rated separately.
 9. Do not output a confidence value. It is computed elsewhere.
 
 ## Output

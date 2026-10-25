@@ -1,6 +1,6 @@
 """Data that flows between pipeline stages. All of it is plain, serializable Pydantic."""
 
-from datetime import date
+from datetime import date, datetime
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, model_validator
@@ -51,21 +51,60 @@ SourceKind = Literal[
 SourceTier = Literal[1, 2, 3]
 
 
+Polarity = Literal["harm", "benefit"]
+SizeBand = Literal["unknown", "small", "large", "very_large"]
+
+
+class BenefitAttrs(BaseModel):
+    """What the deterministic layer needs about a benefit act. Extracted, never judged."""
+
+    against_role: bool = Field(
+        default=False,
+        description=(
+            "True when the act went against what the person's role or incentives expected "
+            "(a refusal, veto, resignation or disclosure). False for work done as assigned."
+        ),
+    )
+    outcome_scale: SizeBand = Field(
+        default="unknown",
+        description="Scale of the documented outcome (people or jurisdiction affected)",
+    )
+    outcome_attributed: bool = Field(
+        default=False,
+        description="True only when a source itself links the outcome to this act",
+    )
+
+
 class Finding(BaseModel):
     """One sourced fact, as reported by a researcher. The LLM fills this in."""
 
     claim: str = Field(description="What the person did, stated behaviorally. No character labels.")
     dimension: str = Field(description="Tag of the rubric dimension this fact belongs to")
+    polarity: Polarity = Field(
+        default="harm",
+        description="'harm' for conduct that contributes to the harm; 'benefit' for costly acts "
+        "that reduce it",
+    )
+    benefit: BenefitAttrs | None = Field(
+        default=None, description="Only for polarity 'benefit'. Leave empty for harm."
+    )
     quote: str = Field(description="Verbatim snippet from the source that supports the claim")
     source_url: str
     source_title: str
     source_kind: SourceKind
     event_date: date | None = Field(default=None, description="When it happened, if known")
 
+    @model_validator(mode="after")
+    def _benefit_attrs_only_for_benefit(self) -> "Finding":
+        if self.polarity == "harm":
+            self.benefit = None
+        return self
+
 
 Seniority = Literal["rank_and_file", "manager", "executive", "founder_or_head_of_state"]
-SizeBand = Literal["unknown", "small", "large", "very_large"]
 NetWorthBand = Literal["unknown", "under_10m", "10m_to_1b", "1b_to_100b", "over_100b"]
+ReachBand = Literal["unknown", "organization", "industry", "national", "global"]
+AuthorityKind = Literal["unknown", "none", "shared", "unilateral"]
 
 
 class Role(BaseModel):
@@ -84,16 +123,32 @@ class PersonFacts(BaseModel):
     highest_office: str | None = None
     organization_size: SizeBand = "unknown"
     net_worth: NetWorthBand = "unknown"
+    reach: ReachBand = Field(
+        default="unknown",
+        description="How far the decisions this person can make or trigger travel: within one "
+        "organization, across an industry or region, across a nation, or across many countries",
+    )
+    authority: AuthorityKind = Field(
+        default="unknown",
+        description="Can this person bind people who did not consent, through law or force? "
+        "'unilateral' by their own decision (head of state or government, an agency head, a "
+        "security chief); 'shared' through a vote or seat in a body that binds others "
+        "(legislator, judge on a panel); 'none' if they can only persuade, sell or employ",
+    )
 
 
 class ResearchFindings(BaseModel):
-    """What a researcher returns. Contains no ids and no tiers: code adds those."""
+    """What a researcher returns. Contains no ids and no tiers: code adds those.
 
-    findings: list[Finding] = Field(default_factory=list)
-    facts: PersonFacts = Field(default_factory=PersonFacts)
-    queries_run: list[str] = Field(default_factory=list)
+    Every field is required, without a default: a default marks the field optional in the schema
+    the model sees, and a model that is short on effort then omits it. An empty list must be
+    written out. The searches run are not asked of the model; code reads them from the agent run.
+    """
+
+    findings: list[Finding]
+    facts: PersonFacts
     gaps: list[str] = Field(
-        default_factory=list, description="Things the checklist asked for but could not be found"
+        description="Things the checklist asked for but could not be found; [] if none"
     )
 
 
@@ -101,6 +156,8 @@ class EvidenceItem(BaseModel):
     id: str
     claim: str
     dimension: str
+    polarity: Polarity = "harm"
+    benefit: BenefitAttrs | None = None
     quote: str
     source_url: str
     source_title: str
@@ -119,6 +176,10 @@ class Dossier(BaseModel):
 
     def item(self, evidence_id: str) -> EvidenceItem | None:
         return next((i for i in self.items if i.id == evidence_id), None)
+
+    def with_polarity(self, polarity: Polarity) -> "Dossier":
+        """The same dossier restricted to one side, so a judge never sees the other."""
+        return self.model_copy(update={"items": [i for i in self.items if i.polarity == polarity]})
 
 
 # --- judging ----------------------------------------------------------------
@@ -145,6 +206,7 @@ class JudgeVerdict(BaseModel):
     """A judge's rating of one dossier against one rubric. No self-reported confidence."""
 
     rubric_id: str
+    polarity: Polarity = "harm"
     insufficient_evidence: bool = Field(
         description="True when the dossier cannot support any rating. Then give no scores."
     )
@@ -168,6 +230,9 @@ class JudgeVerdict(BaseModel):
 # --- scoring ----------------------------------------------------------------
 
 Tier = Literal["ultimate", "major", "unwilling", "minor", "not_a_dick", "unrated"]
+GuardianTier = Literal[
+    "ultimate_guardian", "major_guardian", "minor_guardian", "none_documented", "unrated"
+]
 
 
 class RubricScore(BaseModel):
@@ -183,19 +248,27 @@ class ScoreBreakdown(BaseModel):
     agency: float = Field(ge=0, le=1)
     influence: float = Field(ge=0, le=1, description="Multiplier derived from agency and power")
     harm_score: float | None = Field(description="0-1 combined raw harm, None if unrated")
-    counterweight_reduction: float = Field(ge=0, le=1)
-    final_score: float | None = Field(
-        description="harm x influence x (1 - counterweight), None if unrated"
-    )
+    final_score: float | None = Field(description="harm x influence, None if unrated")
     tier: Tier
-    coverage: float = Field(ge=0, le=1, description="Share of rubrics with usable evidence")
+    coverage: float = Field(ge=0, le=1, description="Share of rubrics with usable harm evidence")
     confidence: float = Field(ge=0, le=1, description="Computed from evidence tiers and counts")
+    benefit_scores: list[RubricScore] = Field(
+        default_factory=list, description="Per-rubric benefit severities, kept apart from harm"
+    )
+    benefit_score: float | None = Field(
+        default=None,
+        description="0-1 benefit profile (severity x act-level influence), None if unrated. "
+        "Never netted against harm.",
+    )
+    benefit_tier: GuardianTier = "unrated"
+    benefit_confidence: float = Field(default=0.0, ge=0, le=1)
     notes: list[str] = Field(default_factory=list)
 
 
 class DickScoreReport(BaseModel):
     subject: Subject
     tier: Tier
+    benefit_tier: GuardianTier = "unrated"
     breakdown: ScoreBreakdown
     evidence: list[EvidenceItem]
     summary: str
@@ -215,3 +288,34 @@ class NeedsDisambiguation(BaseModel):
 
 
 ScoreOutcome = Annotated[Scored | NeedsDisambiguation | Refused, Field(discriminator="kind")]
+
+
+# --- stored runs ------------------------------------------------------------
+
+RunStatus = Literal["running", "done", "failed"]
+
+
+class ResearchRecord(BaseModel):
+    """One persisted scoring run, keyed by the slug of the subject's canonical name.
+
+    `requested_name` and `descriptor` are what the caller typed, kept so records that ended up
+    under different slugs for the same person can be merged later.
+    """
+
+    id: str
+    run_number: int = Field(
+        default=1, ge=1, description="Counts runs of this subject; every renewed run adds one"
+    )
+    requested_name: str
+    descriptor: str | None = None
+    subject: Subject
+    status: RunStatus
+    created_at: datetime
+    updated_at: datetime
+    report: DickScoreReport | None = None
+    error: str | None = Field(default=None, description="Exception type name only, never details")
+
+    @property
+    def session_id(self) -> str:
+        """Groups everything one run produced, e.g. its traces: `luiz-inacio-lula-da-silva:3`."""
+        return f"{self.id}:{self.run_number}"

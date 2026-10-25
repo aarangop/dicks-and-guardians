@@ -11,5 +11,5 @@ def test_dimension_tags_are_unique_within_a_rubric() -> None:
         assert len(rubric.tags) == len(set(rubric.tags)), rubric.id
 
 
-def test_only_r5_is_a_counterweight() -> None:
-    assert [r.id for r in RUBRICS if r.kind == "counterweight"] == ["R5"]
+def test_only_r1_has_a_benefit_side_for_now() -> None:
+    assert [r.id for r in RUBRICS if r.has_benefit] == ["R1"]

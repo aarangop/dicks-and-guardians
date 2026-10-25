@@ -9,6 +9,7 @@ from dont_be_a_dick.domain.evidence import VerdictError, build_dossier
 from dont_be_a_dick.domain.rubrics import R1
 from dont_be_a_dick.domain.schemas import (
     Finding,
+    PersonFacts,
     ResearchFindings,
     Role,
     Subject,
@@ -51,11 +52,15 @@ def dossier():
         source_title="A",
         source_kind="news_report",
     )
-    return build_dossier(SUBJECT, R1, ResearchFindings(findings=[finding]))
+    return build_dossier(
+        SUBJECT, R1, ResearchFindings(findings=[finding], facts=PersonFacts(), gaps=[])
+    )
 
 
 def judge_with(*messages: AIMessage) -> LangChainJudge:
-    return LangChainJudge(FakeToolCallingModel(messages=iter(messages)), prompt_for=lambda r: "p")
+    return LangChainJudge(
+        FakeToolCallingModel(messages=iter(messages)), prompt_for=lambda r, p: "p"
+    )
 
 
 @pytest.mark.anyio
@@ -100,7 +105,7 @@ async def test_gives_up_after_max_attempts(dossier) -> None:
 
 @pytest.mark.anyio
 async def test_empty_dossier_is_insufficient_without_calling_the_model() -> None:
-    empty = build_dossier(SUBJECT, R1, ResearchFindings())
+    empty = build_dossier(SUBJECT, R1, ResearchFindings(findings=[], facts=PersonFacts(), gaps=[]))
     judge = judge_with()  # any model call would exhaust the iterator and fail
 
     verdict = await judge.judge(empty, R1)
@@ -112,13 +117,15 @@ async def test_empty_dossier_is_insufficient_without_calling_the_model() -> None
 @pytest.mark.anyio
 async def test_roles_alone_are_enough_to_ask_the_model_for_a_zero() -> None:
     facts = ResearchFindings(
+        findings=[],
+        gaps=[],
         facts={
             "roles": [
                 Role(
                     title="Professor", organization="A University", seniority="manager"
                 ).model_dump()
             ]
-        }
+        },
     )
     dossier = build_dossier(SUBJECT, R1, facts)
     judge = judge_with(verdict_call(score(severity=0, ids=())))
@@ -126,3 +133,39 @@ async def test_roles_alone_are_enough_to_ask_the_model_for_a_zero() -> None:
     verdict = await judge.judge(dossier, R1)
 
     assert verdict.dimension_scores[0].severity == 0
+
+
+@pytest.mark.anyio
+async def test_the_caller_decides_the_polarity_not_the_model(dossier) -> None:
+    judge = judge_with(verdict_call(score()))  # the model's answer says nothing about polarity
+
+    verdict = await judge.judge(dossier, R1, "benefit")
+
+    assert verdict.polarity == "benefit"
+
+
+@pytest.mark.anyio
+async def test_prompt_is_chosen_by_polarity(dossier) -> None:
+    seen: list[str] = []
+
+    def prompt_for(rubric, polarity) -> str:
+        seen.append(polarity)
+        return "p"
+
+    judge = LangChainJudge(
+        FakeToolCallingModel(messages=iter([verdict_call(score())])), prompt_for=prompt_for
+    )
+
+    await judge.judge(dossier, R1, "benefit")
+
+    assert seen == ["benefit"]
+
+
+@pytest.mark.anyio
+async def test_empty_benefit_dossier_without_roles_is_insufficient_for_that_side() -> None:
+    empty = build_dossier(SUBJECT, R1, ResearchFindings(findings=[], facts=PersonFacts(), gaps=[]))
+
+    verdict = await judge_with().judge(empty, R1, "benefit")
+
+    assert verdict.insufficient_evidence is True
+    assert verdict.polarity == "benefit"

@@ -8,6 +8,7 @@ from dont_be_a_dick.domain.schemas import (
     DimensionScore,
     Finding,
     JudgeVerdict,
+    PersonFacts,
     ResearchFindings,
     Subject,
 )
@@ -50,7 +51,9 @@ def test_build_dossier_assigns_sequential_ids_and_tiers() -> None:
         findings=[
             finding(),
             finding(claim="Lobbied against regulation", source_kind="opinion_or_advocacy"),
-        ]
+        ],
+        facts=PersonFacts(),
+        gaps=[],
     )
 
     dossier = build_dossier(SUBJECT, R1, research)
@@ -60,7 +63,9 @@ def test_build_dossier_assigns_sequential_ids_and_tiers() -> None:
 
 
 def test_build_dossier_drops_duplicates_and_unknown_dimensions() -> None:
-    research = ResearchFindings(findings=[finding(), finding(), finding(dimension="P9")])
+    research = ResearchFindings(
+        findings=[finding(), finding(), finding(dimension="P9")], facts=PersonFacts(), gaps=[]
+    )
 
     dossier = build_dossier(SUBJECT, R1, research)
 
@@ -94,7 +99,9 @@ def dossier():
                 finding(
                     claim="Op-ed", source_kind="opinion_or_advocacy", source_url="https://b.com"
                 ),
-            ]
+            ],
+            facts=PersonFacts(),
+            gaps=[],
         ),
     )
 

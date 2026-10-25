@@ -1,6 +1,6 @@
-# Dickness rubric (draft v0.3)
+# Dickness rubric (draft v0.5)
 
-Status: design draft. Anchors for all five rubrics are drafted. Band thresholds and multiplier values are placeholders to be tuned on calibration.
+Status: design draft. The numbers in this document are the ones the code uses (`domain/scoring.py`, `ScoringConfig`), and they are still untuned. Every rubric has a harm side and the code supports a benefit side on any of them. Anchors are drafted for all harm sides (R1-R4) and for the R1 benefit side. Benefit anchors for R2-R4 are not yet designed.
 
 ## Principles
 
@@ -9,16 +9,20 @@ Status: design draft. Anchors for all five rubrics are drafted. Band thresholds 
 3. **Every score cites evidence.** No evidence means `insufficient_evidence`, not zero.
 4. **Anchored, behavioral scales.** Each level describes what someone did, with a worked example.
 5. **Symmetry.** Anchors describe acts, never affiliations, ideologies or parties. The same act scores the same regardless of who did it.
+6. **Good and bad are never netted.** Harm and benefit are two separate profiles with their own scores and tiers. Good done in one area does not offset harm done in another, because harms to different victims are not fungible, and reconciling them would need a moral exchange rate nobody can defend. Someone can be a Major Dick and a Major Guardian at once, and the report shows both. This is a deliberate trade-off. Nothing links the two profiles, not even making amends for the same harm.
+7. **Inequality of impact is part of the result.** People with more power and more discretion can do more good and more harm, and the score reflects that. The point is to put the spotlight on those who can move outcomes. Agency and power scale both profiles (see Aggregation).
 
 Theoretical grounding: Kemp, *Goliath's Curse* (dominance hierarchies, Goliath fuel, Agents of Doom, prestige vs. domination). Kemp's psychological claims (dark triad) are contested, which is why this rubric only uses their observable behavioral form.
 
 ## Pipeline
 
 ```
-name -> [research agent per rubric] -> evidence dossier (structured, sourced, dated)
-     -> [judge per rubric]          -> severity 0-4 + evidence IDs + rationale
-     -> [deterministic function]    -> modifiers, final tier, full breakdown
+name -> [research agent per rubric]      -> evidence dossier (structured, sourced, dated)
+     -> [judge per rubric and polarity]  -> severity 0-4 + evidence IDs + rationale
+     -> [deterministic function]         -> modifiers, harm tier, contribution tier, full breakdown
 ```
+
+One researcher per rubric collects both sides, and every finding carries a `polarity` (`harm` or `benefit`). The dossier is shared, but each judge call sees only the findings of its own side, so a judge cannot net one side against the other. A person can have findings on both sides of the same rubric.
 
 ## Shared rules
 
@@ -30,7 +34,7 @@ name -> [research agent per rubric] -> evidence dossier (structured, sourced, da
 
 ### Judge output schema (all rubrics)
 
-`score` (0-4), `evidence_ids`, `rationale`, `insufficient_evidence` (bool).
+`polarity` (`harm` or `benefit`), `score` (0-4), `evidence_ids`, `rationale`, `insufficient_evidence` (bool). Severity means harm for the harm polarity and positive impact for the benefit polarity.
 
 ### Cross-rubric rules
 
@@ -49,7 +53,8 @@ name -> [research agent per rubric] -> evidence dossier (structured, sourced, da
 | Wielding power against opponents or citizens (including using that surveillance) | R2 |
 | Business model or policy design that shifts costs onto others | R3 |
 | Bribery, embezzlement, fraud, lying to regulators, undisclosed conflicts | R4 |
-| Costly action reducing harm or sharing power | R5 |
+| Costly action reducing catastrophic risk | Benefit side of R1 (same pathway tags) |
+| Costly action restraining domination, reducing extraction, or exposing corruption | Benefit sides of R2-R4 (not yet designed) |
 
 ### Spec template (one per rubric)
 
@@ -70,7 +75,7 @@ Out of scope:
 
 ### Pathways
 
-The researcher tags each fact with exactly one pathway. P1-P5 count equally. Code takes the highest pathway score as the base and applies a breadth multiplier when the person scores L2 or above in more than one pathway on independent facts (see Deterministic layer). This separates someone who contributes to several risk pathways, who acts as a risk multiplier, from someone who contributes to one.
+The researcher tags each fact with exactly one pathway. P1-P5 count equally. Code takes the strongest pathway score for the rubric. There is no breadth multiplier for contributing to several pathways yet, so someone who contributes to several pathways scores the same as someone who contributes to one (see Open questions).
 
 | Tag | Pathway | Examples of disregard for danger |
 |---|---|---|
@@ -98,7 +103,7 @@ The judge may only count these as "documented disregard":
 
 ### Scale
 
-"Moderate scale" and "large scale" are band labels computed by code from raw numbers the researcher extracts (see Bands in the Deterministic layer). The judge sees the label in the dossier and never estimates scale itself.
+Scale comes from labels the researcher reports in `facts` (reach, authority, and the legacy organization size and net worth bands). The judge sees them in the dossier, and code turns them into power. Code does not yet derive the bands from raw numbers (see Open questions).
 
 ### Severity anchors
 
@@ -124,12 +129,12 @@ Level 0 in every pathway: index-fund manager, pension trustee, journalist coveri
 
 ### Boundary cases
 
-1. **Safety researcher at a lab with documented organizational disregard:** P1 L1. They contribute labor but show no personal disregard. R5 evidence offsets. Agency keeps them low ("Unwilling" shape).
-2. **Employee who resigned publicly in protest:** R1 reflects tenure and role, discounted for recency. R5 gets a positive entry.
+1. **Safety researcher at a lab with documented organizational disregard:** P1 L1 on the harm side. They contribute labor but show no personal disregard. Their safety work is scored on the benefit side, separately, and does not reduce the harm score. Agency keeps the harm low ("Unwilling" shape).
+2. **Employee who resigned publicly in protest:** the harm side reflects tenure and role, discounted for recency. The resignation is a benefit-side entry, not an offset.
 3. **Rank-and-file researcher writing op-eds against regulation:** P1 L2 (speech cap).
 4. **Registered lobbyist hired to block AI regulation:** P1 L3. Not an employee, but they choose the client and the work is regulatory obstruction. Agency is high.
 5. **Investor with a board seat directing strategy:** L3. A large stake without control: L0.
-6. **Legislator voting on safeguards:** L3, even for a single vote (DI-9). A legislator's vote carries orders of magnitude more influence than a citizen's. The vote must be on legislation whose main purpose is a safeguard or its removal, not an omnibus rider. A vote for safeguards is an R5 candidate. Citizens' votes are never scored.
+6. **Legislator voting on safeguards:** L3, even for a single vote (DI-9). A legislator's vote carries orders of magnitude more influence than a citizen's. The vote must be on legislation whose main purpose is a safeguard or its removal, not an omnibus rider. A vote for safeguards is a benefit-side candidate. Citizens' votes are never scored.
 
 ### Evidence checklist (researcher)
 
@@ -187,7 +192,7 @@ Concentrating wealth by shifting costs onto workers, customers, the public or th
 ### Scope
 
 - Counts: business practices, policy design, lobbying for extractive rules.
-- Does not count: **being rich**, personal consumption, or lifestyle. Wealth is a modifier (power), not a behavior. Charity goes to R5.
+- Does not count: **being rich**, personal consumption, or lifestyle. Wealth is a modifier (power), not a behavior. Charity goes to the benefit side.
 - Routing: bribery, embezzlement and fraud go to R4. The business model or policy that makes extraction systematic goes to R3.
 
 ### Evidence checklist (researcher)
@@ -213,7 +218,7 @@ Concentrating wealth by shifting costs onto workers, customers, the public or th
 
 1. **Legal tax minimization at ordinary scale:** L0. Only documented large-scale structuring counts.
 2. **Employee carrying out extractive policies:** the act is scored, and agency scales it. A payroll clerk does not score like the CEO.
-3. **Philanthropy alongside extraction:** both are recorded. R5 offsets only within its cap.
+3. **Philanthropy alongside extraction:** both are recorded, on separate profiles. Philanthropy does not offset extraction, and neither does restitution: the benefit act is scored on its own side.
 
 ## R4: Corruption and integrity
 
@@ -253,28 +258,53 @@ Proven fraud, bribery, self-dealing, conflicts of interest, obstruction, or dece
 3. **Revolving door:** legal but documented. L1 alone; L3 if paired with documented favorable decisions.
 4. **Pardon:** does not erase the conduct. The underlying finding stands.
 
-## R5: Counterweight
+## Benefit side
 
 ### Definition
 
-Costly, verified actions that reduce catastrophic risk, share power, or restrain domination. This is Kemp's prestige-versus-domination distinction: standing earned by giving up power or advantage instead of taking it.
+Costly, verified actions that reduce catastrophic risk (and later: share power, restrain domination, reduce extraction, expose corruption). This is Kemp's prestige-versus-domination distinction: standing earned by giving up power or advantage instead of taking it.
+
+The benefit side produces its own profile with its own tier ladder (Minor, Major and Ultimate Guardian). It never reduces the harm profile, and the harm profile never reduces it. Every rubric has a harm side, and a rubric opts into a benefit side once its benefit anchors exist. Today only R1 has them.
 
 ### Scope
 
-- R5 can only reduce the final score, up to a fixed cap set in code.
 - **Pledges are not actions.** Only executed actions count.
+- **Independent confirmation.** The person's own organization saying it did something is Tier 3 and cannot support a score. Impact needs a Tier 1 or Tier 2 source.
 - **Cost is relative to means.** The researcher records cost as a share of the person's resources or career at stake. A $1M donation by a billionaire is not a costly act.
-- Not counted: philanthropy that also buys influence against safety or democratic checks (for example funding groups that lobby against regulation).
-- Each entry is tagged with the rubric it offsets (R1-R4), and with the pathway for R1. Offsets apply only within that rubric (and pathway). Harms to different victims are not fungible: safety funding does not offset fraud.
+- **Pathway first.** An act must map to a benefit pathway before it can score. Cost relative to means then sets the level inside the pathway. High personal cost alone never lifts an act above level 1 when it has no measurable effect on a pathway. Recycling, for example, maps to no catastrophic-risk pathway and scores 0.
+- **Not counted:** philanthropy that also buys influence against safety or democratic checks (for example funding groups that lobby against regulation).
+- **Agency and power scale benefit like they scale harm**, measured per act (see Aggregation). A lab head who funds safety at scale contributes more than an intern doing the same.
+- **Zero is the default.** No documented benefit is not a negative. It never feeds the harm score and never lowers any tier.
+- **Speech alone caps at L1** (statements of concern, open letters with no action).
+
+### Facts the researcher extracts for a benefit act
+
+Extracted, never judged:
+
+- `against_role`: the act went against what the person's role or incentives expected (a refusal, veto, resignation or disclosure), as opposed to work done as assigned.
+- `outcome_scale`: size band of the documented outcome (policy adopted, practice changed, treaty signed), or `unknown`.
+- `outcome_attributed`: a source itself links that outcome to this act. Outcomes with many contributors credit each one as a contributor, never as sole cause.
+
+### Pathways (R1 benefit side)
+
+Benefit facts use the same tags as R1, so the two sides read side by side.
+
+| Tag | Pathway | Examples of costly mitigation |
+|---|---|---|
+| P1 | AI loss of control | Resigning on principle over safety, internal or public safety whistleblowing, funding independent evaluation, ceding control to an external safety body, supporting binding AI regulation against one's own interest |
+| P2 | AI weaponization and repression | Refusing a defense or surveillance contract, working to keep human control over lethal and nuclear decisions, disclosing misuse by state actors |
+| P3 | AI misuse and proliferation | Withholding or delaying a release over weapons-relevant risk, building and enforcing vetting for access, disclosing dangerous capabilities responsibly |
+| P4 | Fossil fuel | Disclosing the company's own climate science, divesting or giving up extraction revenue, backing binding climate policy against one's interest |
+| P5 | Conventional and nuclear arms industry | Refusing sales to regimes with atrocity records, supporting arms-control and verification, whistleblowing on illicit transfers |
 
 ### Evidence checklist (researcher)
 
 - Resignations, refusals of contracts or deals, and what they cost
 - Whistleblowing, with the channel used and the personal risk
 - Divestment or revenue given up
-- Funding of independent oversight, safety research, or democratic institutions, with amounts relative to means
+- Funding of independent oversight or safety research, with amounts relative to means
 - Voluntarily binding commitments and whether they were kept
-- Documented outcomes (policies adopted, practices changed)
+- Documented outcomes (policies adopted, practices changed), from independent sources
 
 ### Severity anchors (benefit)
 
@@ -288,107 +318,181 @@ Costly, verified actions that reduce catastrophic risk, share power, or restrain
 
 ### Boundary cases
 
-1. **Donation to safety research from wealth earned in the same sector:** counts, but cost-to-means decides the level, and the cap prevents laundering.
+1. **Donation to safety research from wealth earned in the same sector:** counts, but cost-to-means decides the level. It does not offset harm, so it cannot launder it.
 2. **Resignation followed by joining a competitor doing the same thing:** zero, unless the departure involved a documented principled objection.
 3. **Public statements of concern with no action:** L1 maximum.
+4. **Safety funding by someone convicted of fraud:** a benefit finding and a fraud finding. Neither changes the other.
+5. **Whistleblower exposing the system they helped build:** a benefit act on the benefit side. It does not reduce the harm of having built the system. Both profiles show.
+6. **Making amends for a specific harm** (restitution, a recall): scored as a benefit act at the level its cost supports. It does not reduce the harm score for the same harm.
 
 ## Deterministic layer
 
+All of this lives in `ScoringConfig` in `domain/scoring.py`, so calibration means changing configuration and not logic. Scores are on a 0-1 scale.
+
 ### Structured facts extracted by researchers (not judged by the LLM)
 
-- Power: office held, organization size, net worth band
-- Agency: seniority, voluntariness, time in role. Score scales proportionally to agency, so rank and file rank lower than executives.
-- Recency and duration of each act
-- Evidence tier of each item
-- For R5: cost as a share of means
+- Roles: title, organization, seniority (`rank_and_file`, `manager`, `executive`, `founder_or_head_of_state`), dates, and whether the role was voluntary (true, false or unknown).
+- Highest office held. Any value counts as holding an office.
+- Reach (`unknown`, `organization`, `industry`, `national`, `global`): how far the decisions the person can make or trigger travel.
+- Authority (`unknown`, `none`, `shared`, `unilateral`): whether the person can bind people who did not consent, through law or force. `unilateral` by their own decision (head of state or government, agency head, security chief), `shared` through a vote or seat in a body that binds others (legislator, panel judge), `none` if they can only persuade, sell or employ. Owning or running a company is `none`, however large.
+- Organization size band (`unknown`, `small`, `large`, `very_large`) and net worth band (`unknown`, `under_10m`, `10m_to_1b`, `1b_to_100b`, `over_100b`). Legacy readings, used for power only when reach is unknown, and still used for the scale of a benefit outcome. The researcher reports the band directly.
+- Evidence tier of each item. Code assigns it from the source kind and the URL host, never the model.
+- For benefit facts: `against_role`, `outcome_scale` and `outcome_attributed` (see Benefit side).
 
-### Bands
+Not extracted yet: recency or duration of acts, and cost as a share of means as a structured number (the cost is written in the claim and the judge reads it).
 
-The researcher extracts raw numbers with units and sources. Code maps them to four categorical bands with fixed lookup tables, on a log scale because power grows by orders of magnitude. If several metrics exist, code uses the highest band. If none exist, the band is `unknown` and confidence drops. Thresholds below are placeholders.
+### Severity to strength
 
-| Band | Org revenue or budget | Org headcount | Users | Individual net worth |
-|---|---|---|---|---|
-| Small | < $10M | < 100 | < 100k | < $10M |
-| Moderate | $10M - $1B | 100 - 10k | 100k - 10M | $10M - $1B |
-| Large | $1B - $100B | 10k - 200k | 10M - 1B | $1B - $100B |
-| Systemic | > $100B | > 200k | > 1B | > $100B |
+The judge's level becomes a strength with a lookup table. It is deliberately not linear: a level 1 is small and a level 4 is full strength.
 
-Office or role is ordinal instead: none or local, regional, national legislator or minister, head of state or government, leader of a frontier AI lab or a nuclear-armed state's military.
+| Severity | 0 | 1 | 2 | 3 | 4 |
+|---|---|---|---|---|---|
+| Strength | 0 | 0.15 | 0.40 | 0.70 | 1.00 |
 
-The pipeline runs: researcher extracts raw numbers, code computes band labels, judge receives the labels.
+### Agency, power and influence
 
-### Aggregation principles (numbers to be tuned on calibration)
+**Agency** is the strongest value among the person's documented roles, halved when a role is documented as involuntary. With no documented roles it defaults to 0.5, and the result says so.
 
-- Do not average axes. Use a max-like combination (for example a weighted probabilistic OR) so one catastrophic act is not diluted.
-- Power and agency multiply the harm axes (R1-R4).
-- R1 breadth multiplier: base is the highest pathway score. Each additional pathway scored L2 or above on independent facts raises it by a diminishing step (placeholder: x1.0, x1.15, x1.25, x1.3, x1.35). One fact is tagged to one pathway, so a single act cannot count twice.
-- R5 offsets apply only within the tagged rubric (and pathway for R1), cannot reduce an axis below 0, and together can lower the final tier by at most one level.
+| Seniority | Agency |
+|---|---|
+| Rank and file | 0.25 |
+| Manager | 0.50 |
+| Executive | 0.85 |
+| Founder or head of state | 1.00 |
+
+**Power** is the highest reading across all rubrics' facts, with a floor of 0.3 (the value for `unknown`). When the researcher reports a reach, power is read from reach and authority. Binding people who did not consent, through law or force, is worth more than persuading or selling to people who can say no. That is the difference between a head of state and a very large company.
+
+| Reach | Authority `none` | `shared` | `unilateral` |
+|---|---|---|---|
+| organization | 0.20 | 0.30 | 0.40 |
+| industry | 0.45 | 0.55 | 0.65 |
+| national | 0.65 | 0.75 | 0.90 |
+| global | 0.85 | 0.90 | 1.00 |
+
+An unknown authority reads as `none`, so a missing fact never inflates power. Only a global reach with unilateral authority reaches 1.0.
+
+When reach is unknown (older runs), power falls back to legacy readings, capped at 0.85 so wealth or size alone never reaches the top:
+
+| Organization size | Power | Net worth | Power |
+|---|---|---|---|
+| unknown | 0.30 | unknown | 0.30 |
+| small | 0.20 | under $10M | 0.10 |
+| large | 0.60 | $10M - $1B | 0.50 |
+| very large | 0.85 (capped) | $1B - $100B | 0.85 |
+| | | over $100B | 0.85 (capped) |
+
+A documented highest office reads 0.90 in that fallback, above every capped legacy reading.
+
+**Influence** combines them: `influence = agency x (0.4 + 0.6 x power)`. The 0.4 is a floor, so even someone with no power keeps 40% of their agency-weighted influence. Influence runs from about 0.15 (rank and file, unknown power) to 1.0 (founder with maximum power).
+
+### Aggregation
+
+- Within a rubric, the strongest dimension sets the rubric's strength. Dimension weights and rubric weights exist in the config for the harm side and default to 1.0.
+- Across rubrics, each side combines max-dominant: `combined = strongest + 0.25 x (1 - strongest) x min(sum of the others, 1)`. The strongest term dominates, and the others add with diminishing returns. A plain average is never used, so one catastrophic act is not diluted. A plain sum is never used either, so many small acts never outweigh one major one. A plain probabilistic OR was tried and rejected: it scored four minor offenses too high.
+- **Harm profile:** `harm` is the combined strength, and `final = harm x influence`.
+- **Benefit profile:** each benefit dimension is `strength x act-level influence`, where agency and power are measured per act (see Benefit side). The strongest dimension per rubric is combined across rubrics with the same formula. Nothing in either profile enters the other.
 - Score severity, not volume of evidence. A famous person with a thick dossier must not score higher just because more was written about them.
-- Evidence on a single rubric is enough to rate someone (see Rating rule below).
-- Confidence is computed from evidence tiers and counts, not from the judge's self-report.
-- Final score and tiers: see the next section.
 
-### Agency and power multipliers (placeholders)
+### Confidence and coverage
 
-| Agency | Value | Who |
-|---|---|---|
-| Low | 0.5 | Rank and file, no discretion |
-| Medium | 0.75 | Team lead or manager with some discretion |
-| High | 1.0 | Executive, owner, elected official, independent professional (including hired lobbyists) |
+- **Coverage:** the share of harm rubrics with a usable verdict.
+- **Confidence per usable rubric:** when the verdict cites evidence, the sum of the cited items' tier quality divided by 3, capped at 1. Tier quality is 1.0 for Tier 1, 0.7 for Tier 2 and 0.3 for Tier 3. When nothing is cited, it is 0.5 if the dossier documents the person's roles (a documented zero) and 0.25 if not.
+- **Harm confidence** is coverage times the mean confidence of the usable rubrics. **Benefit confidence** is the same over the benefit rubrics.
+- Confidence is computed from evidence and never from the judge's self-report. The website marks results below 0.5 confidence as provisional.
 
-| Power | Multiplier | Band or office |
-|---|---|---|
-| Minimal | 1.0 | Small band, none or local office |
-| Some | 1.05 | Moderate band, regional office |
-| High | 1.15 | Large band, national legislator or minister |
-| Systemic | 1.25 | Systemic band, head of state or government, frontier lab leader, nuclear-armed state's military leader |
+## Final score and tiers
 
-## Final score and tiers (draft)
+Tuned only on hypothetical archetypes. Recency decay is not in the formula. The report carries two independent results, harm and benefit, and never merges them.
 
-Tuned only on hypothetical archetypes. Recency decay and confidence are not yet in the formula.
+### Harm tiers
 
-For each harm rubric i in R1-R4:
-
-1. `h_i = (severity_i / 4) x agency x power`, capped at 1. For R1, multiply by the breadth multiplier before the cap.
-2. R5 in-axis offset: `h_i = h_i x (1 - 0.4 x r5_i / 4)`, where `r5_i` is the highest R5 level tagged to that rubric (and pathway for R1).
-3. Combine: `m = max(h_i)`, `rest = min(sum of the other h_i, 1)`, `S = 100 x (m + 0.25 x (1 - m) x rest)`. The worst axis dominates, and the others add with diminishing returns. A plain probabilistic OR was tested and rejected: four minor offenses (L1 on all four) scored 68, which is too high.
-
-Tiers from `S`:
+Evaluated in this order on `harm`, `influence` and `final`:
 
 | Tier | Rule |
 |---|---|
-| Not a Dick | S < 10, subject to the rating rule |
-| Minor Dick | 10 <= S < 40 |
-| Unwilling Dick | Agency is low (0.5), R1 severity >= 1, no other rubric at L2 or above, and S < 40. Takes precedence over Minor. |
-| Major Dick | 40 <= S < 85, or S >= 85 without systemic power |
-| Ultimate Dick | S >= 85 **and** systemic power |
+| Unwilling Dick | `harm >= 0.4` and `influence <= 0.3`. Takes precedence over every other tier. |
+| Ultimate Dick | `final >= 0.75` |
+| Major Dick | `final >= 0.45` |
+| Minor Dick | `final >= 0.1` |
+| Not a Dick | otherwise |
+| Unrated | A required rubric has no usable verdict (see Rating rule) |
 
-Ultimate requires systemic power, echoing the README ("wields immense power"). R5 can lower the final tier by at most one level versus the tier computed without R5. Ordinal order: Ultimate, Major, Unwilling, Minor, Not.
+There is no separate systemic-power condition. `final >= 0.75` already needs influence of at least 0.75, which takes high agency and high power. The website calls power of 0.75 or more "systemic" for display only.
 
-### Sanity check (archetypes)
+Two consequences of the rules as implemented. The Unwilling rule applies to any rubric, and needs harm of at least 0.4, which means at least a level 2. And a person with low influence and only a level 1 finding falls below the Minor cut and reads as Not a Dick, even though a documented finding exists.
 
-| Archetype | S | Tier |
+### Benefit tiers
+
+The ladder mirrors the harm ladder. It uses its own thresholds, which currently equal the harm ones, and there is no counterpart to Unwilling.
+
+The Minor floor exists because influence can push a real, confirmed act below the 0.1 cut: a junior person's level 2 act scores 0.06. The judge only scores 1 or higher with cited evidence, so such an act is documented, and "None documented" must mean none was found. The floor does not apply to the harm side.
+
+| Tier | Rule |
+|---|---|
+| Ultimate Guardian | `benefit_score >= 0.75` |
+| Major Guardian | `benefit_score >= 0.45` |
+| Minor Guardian | `benefit_score >= 0.1`, **or** any benefit the judge scored at level 1 or above (the floor) |
+| None documented | No benefit scored above 0. The normal case, and never a negative. |
+| Unrated | The benefit side failed to run or had insufficient evidence |
+
+### Sanity check (harm archetypes)
+
+These are the real outputs of `compute_score` for hypothetical archetypes.
+
+| Archetype | Final | Tier |
 |---|---|---|
-| Founder-CEO of a frontier lab, R1 L4, systemic power, three pathways | 100 | Ultimate |
-| Lab VP, R1 L3, large | 86 | Major |
-| Same VP with in-axis R5 L3 (for example safety whistleblowing) | 60 | Major |
-| Legislator, one decisive vote against safeguards (R1 L3, national) | 86 | Major |
-| Team lead who signed off a risky release (R1 L2, medium agency) | 39 | Minor (edge of the cut) |
-| Rank and file, R1 L1 | 13 | Unwilling |
-| Rank and file, R1 L2 | 25 | Unwilling |
-| Rank and file with R1 L2 and R4 L2 | 30 | Minor |
-| Founder convicted of large-scale fraud (R4 L4), small organization | 100 | Major (no systemic power) |
-| L1 on all four rubrics, high agency | 39 | Minor |
-| L2 on all four rubrics, high agency | 63 | Major |
-| Head of state, R2 L4, R1 L3, R3 L2, R4 L1 | 100 | Ultimate |
+| Founder-CEO of a frontier lab, R1 L4, over $100B, very large org | 1.00 | Ultimate |
+| Lab VP, R1 L3, large org | 0.45 | Major (on the edge of the cut) |
+| Legislator, one decisive vote against safeguards (R1 L3, national office) | 0.52 | Major |
+| Team lead who signed off a risky release (R1 L2, manager, large org) | 0.15 | Minor |
+| Rank and file, R1 L1, large org | 0.03 | Not a Dick (documented, below the Minor cut) |
+| Rank and file, R1 L2, large org | 0.08 | Unwilling |
+| Rank and file with R1 L2 and R4 L2, large org | 0.09 | Unwilling |
+| Founder convicted of large-scale fraud (R4 L4), small org | 0.58 | Major |
+| Executive at a very large org, L1 on R1, R3 and R4 | 0.17 | Minor |
+| Executive at a very large org, L2 on R1, R3 and R4 | 0.42 | Minor (just under the Major cut) |
+| Head of state, R2 L4, R1 L3, R3 L2, R4 L1 | 0.88 | Ultimate |
 
-### Rating rule
+### Sanity check (benefit archetypes)
 
-- **One rubric is enough to rate.** If the only evidence found is on one rubric, the person is rated on that rubric. Evidence of harm is provable.
-- **Minimum evidence:** at least one Tier 1 or Tier 2 item. Tier 3 alone cannot rate anyone.
-- **Absence is not provable.** Rubrics with no evidence contribute 0, so the score is a floor. Output states coverage ("rated on 2 of 4 harm rubrics").
-- **"Not a Dick" needs coverage:** every harm rubric (R1-R4) must have been researched with a logged search that found nothing. A researcher that failed or found no data returns `insufficient_evidence`, which is different from a documented zero. If coverage is incomplete, the label is "No harm found (partial coverage)", not "Not a Dick".
-- **No evidence on any rubric:** `unrated`.
+Real outputs for the benefit profile alone, with a level 1 to 4 act. "Against the role" is `against_role = true`. "Outcome" adds an attributed outcome of `large` scale from a Tier 1 or Tier 2 source. Pair each row with the same person's harm profile, never net them.
+
+| Subject | Level | Role-based | Against the role | Against the role, with outcome |
+|---|---|---|---|---|
+| Rank and file, small org | L2 | 0.06 Minor (floor) | 0.23 Minor | 0.30 Minor |
+| Rank and file, small org | L3 | 0.10 Minor | 0.41 Minor | 0.53 Major |
+| Rank and file, small org | L4 | 0.15 Minor | 0.58 Major | 0.76 Ultimate |
+| Manager, large org | L3 | 0.27 Minor | 0.53 Major | 0.53 Major |
+| Manager, large org | L4 | 0.38 Minor | 0.76 Ultimate | 0.76 Ultimate |
+| Executive, very large org | L2 | 0.32 Minor | 0.38 Minor | 0.38 Minor |
+| Executive, very large org | L3 | 0.56 Major | 0.66 Major | 0.66 Major |
+| Executive, very large org | L4 | 0.80 Ultimate | 0.94 Ultimate | 0.94 Ultimate |
+| Founder, over $100B | L2 | 0.40 Minor | 0.40 Minor | 0.40 Minor |
+| Founder, over $100B | L3 | 0.70 Major | 0.70 Major | 0.70 Major |
+| Founder, over $100B | L4 | 1.00 Ultimate | 1.00 Ultimate | 1.00 Ultimate |
+
+What the numbers show:
+
+- A level 2 act can never reach Major Guardian, because the strongest case is 0.40.
+- Major Guardian takes a level 3 act with influence of about 0.64 or more, or a junior person's level 3 act with a documented attributed outcome.
+- Ultimate Guardian takes a level 4 act with influence of at least 0.75. For a junior person that comes from acting against the role plus a documented outcome. For a manager at a large organization, acting against the role alone is already enough.
+- A documented act at level 1 or 2 by someone with little influence scores below 0.1. The Minor floor keeps it from reading as None documented.
+
+Combined reports, for illustration. The two results are listed side by side and never merged:
+
+| Person | Harm | Benefit |
+|---|---|---|
+| Founder-CEO, R1 L4, over $100B, who also funds independent safety evaluation (L2) | 1.00, Ultimate Dick | 0.40, Minor Guardian |
+| Lab VP, R1 L3, large org, who later blows the whistle publicly (L3, against the role) | 0.45, Major Dick | 0.53, Major Guardian |
+| Same VP, no documented benefit | 0.45, Major Dick | None documented |
+
+### Rating rule (as implemented)
+
+- **Required rubrics.** `required_rubric_ids` in the config, by default R1 and R2. If a required rubric is among the ones run and has no usable harm verdict, the result is `unrated`. The other rubrics are optional: a failed one only lowers coverage. A usable verdict is one that is not `insufficient_evidence`.
+- **Rubrics with no evidence contribute 0**, so the harm score is a floor. Coverage and confidence are reported, and a documented zero is more confident than an undocumented one.
+- **Minimum evidence.** A score of 1 or more must cite evidence, and cannot rest on Tier 3 sources alone. Tier 3 alone therefore cannot raise anyone above zero.
+- **"Not a Dick" is a score rule** (`final < 0.1`). Code does not yet require logged searches on every harm rubric before using the label. A researcher that failed or found nothing leaves that rubric out of coverage, which lowers confidence, and low-confidence results show as provisional.
+- **The benefit profile has its own rating.** At least one Tier 1 or Tier 2 item must confirm the act. No benefit evidence gives None documented, which is not a harm finding. A failed or insufficient benefit side gives Unrated for the benefit tier only, and never changes the harm result.
 
 ## Decisions log
 
@@ -401,20 +505,35 @@ Ultimate requires systemic power, echoing the README ("wields immense power"). R
 - No single-act cap for now. Revisit after calibration.
 - Personal wealth and consumption are not scored. Wealth is a power modifier.
 - Allegations never score. Settlements without admission cap at L2.
-- Pathways P1-P5 weigh equally. Contributing to several pathways raises R1 through a breadth multiplier.
-- Scale is categorical (four log bands) and computed by code from researcher-extracted numbers.
-- R5 offsets in-axis only, with a global cap of one tier.
+- Pathways P1-P5 weigh equally, and the strongest dominates. There is no breadth multiplier yet.
+- Scale is categorical. The researcher reports reach, authority, size and net worth bands and code maps them to power. Deriving bands from raw numbers is future work.
+- Good and bad are never netted. Harm and benefit are separate profiles with separate tiers (Minor, Major and Ultimate Guardian, mirroring the Dick ladder). Nothing links them: no remediation offset either.
+- R5 is retired. Every rubric has a harm side, and a rubric opts into a benefit side once its anchors exist. First iteration: R1 only, with pathways P1-P5.
+- One researcher per rubric collects both sides, and each finding carries a polarity. One judge call per side, and each judge sees only its own side's findings.
+- Benefit facts need independent confirmation. The person's own organization's claims are Tier 3.
+- Each side aggregates max-dominant, not as a sum. Volume does not inflate a score.
+- Agency and power stay on the benefit side, measured per act: acting against the role gives high agency, and an attributed, independently sourced outcome lifts power. Inequality of impact is part of the result by design.
+- A benefit act must map to a pathway. Cost relative to means sets the level inside it.
 - Output includes every per-rubric score with evidence, plus the final tier.
 - Scope is figures with enough public data. Below a minimum evidence threshold the result is `unrated`. This is an inherent limitation.
 - A legislator voting on safeguards scores L3 (DI-9).
 - A vote and the donations received are separate facts, scored separately.
-- Evidence on a single rubric is enough to rate. "Not a Dick" requires logged searches on all harm rubrics.
+- R1 and R2 are required to rate someone. The other rubrics are optional and only lower coverage when missing.
 - Score combination is max-dominant with diminishing additions, not a plain probabilistic OR.
-- Ultimate Dick requires systemic power.
+- Ultimate (harm and benefit) needs a score of 0.75. There is no separate systemic-power condition. Influence of at least 0.75 already takes high agency and power.
 
 ## Open questions
 
-- Breadth multiplier values, band thresholds, agency and power multipliers, and the tier cut points (all placeholders, to be tuned on calibration).
-- Recency decay: how fast old acts fade. Not yet in the formula.
-- Low priority: R1 anchors L1-L2 describe junior roles and the agency multiplier then discounts again. Junior roles are not the target population, so this is parked.
-- Whether the team-lead archetype (S = 39) should sit in Minor or Major.
+- All numbers are placeholders to tune on calibration against hand-scored people: strengths, agency, power, the influence floor, the combination weight and the cut points.
+- **Guardian cut points.** Keep Minor at 0.1, Major at 0.45 and Ultimate at 0.75 for now. They give a sensible shape: level 2 tops out at Minor, level 3 reaches Major with real influence or an attributed outcome, and Ultimate needs a level 4 act. Changes so far: (1) Done: a documented, confirmed benefit at level 1 or above has a Minor Guardian floor. (2) Not done: gate both Ultimate tiers on power of at least 0.75, so Ultimate means a systemic role or a systemic outcome. Today a manager at a large organization reaches Ultimate Guardian with a level 4 act against the role and no documented outcome. Re-tune the benefit cuts separately from the harm cuts once there are real runs.
+- **Low-influence harm.** A documented level 1 finding by someone with low influence reads as Not a Dick, and the Unwilling rule only starts at level 2. Decide whether a documented minor finding should have a tier of its own.
+- **Breadth multiplier.** Contributing to several R1 pathways does not raise the score yet. The same question applies to the benefit side.
+- **Bands from numbers.** Have the researcher extract raw numbers and let code compute the bands, as originally designed, instead of the researcher choosing a band. The size scale could also gain a moderate band.
+- **Systemic-power condition and the Unwilling rule.** The code decides Ultimate by score alone and Unwilling by harm and influence thresholds. Decide whether to restore the stricter definitions from earlier drafts (Unwilling: low agency, R1 severity of at least 1, no other rubric at level 2 or above).
+- **Rating coverage.** Whether "Not a Dick" should require logged searches on every harm rubric, and whether the label "No harm found (partial coverage)" should exist.
+- **Recency decay.** How fast old acts fade. Not yet in the formula.
+- Low priority: R1 anchors L1-L2 describe junior roles and the agency value then discounts again. Junior roles are not the target population, so this is parked.
+- Whether the team-lead archetype should sit in Minor or Major.
+- Should making amends for a specific harm be recognized on the harm side? Today it is not, because the two profiles have no link.
+- Should the Guardian ladder get a counterpart to Unwilling, or is a three-tier ladder enough?
+- Benefit sides for R2-R4: defending checks, fair labor, exposing fraud.

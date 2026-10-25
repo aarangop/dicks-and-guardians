@@ -218,3 +218,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# Stored scoring runs (TinyDB)
+data/
+
+# The static site ships its data file; it is exported from data/results.json on purpose.
+!web/data/

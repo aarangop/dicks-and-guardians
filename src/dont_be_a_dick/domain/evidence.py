@@ -3,6 +3,7 @@
 Pure functions: ids and source tiers are assigned here, in code, never by an LLM.
 """
 
+from collections.abc import Sequence
 from urllib.parse import urlparse
 
 from dont_be_a_dick.domain.rubrics import Rubric
@@ -10,6 +11,7 @@ from dont_be_a_dick.domain.schemas import (
     Dossier,
     EvidenceItem,
     JudgeVerdict,
+    Polarity,
     ResearchFindings,
     SourceKind,
     SourceTier,
@@ -43,14 +45,26 @@ def classify_tier(kind: SourceKind, url: str) -> SourceTier:
     return tier
 
 
-def build_dossier(subject: Subject, rubric: Rubric, research: ResearchFindings) -> Dossier:
-    """Assign ids and tiers, drop duplicates and findings outside the rubric's dimensions."""
+def build_dossier(
+    subject: Subject,
+    rubric: Rubric,
+    research: ResearchFindings,
+    queries_run: Sequence[str] = (),
+) -> Dossier:
+    """Assign ids and tiers, drop duplicates and findings outside the rubric's dimensions.
+
+    Benefit findings are kept only for rubrics that have benefit anchors.
+    """
     items: list[EvidenceItem] = []
     seen: set[tuple[str, str]] = set()
     dropped_unknown = 0
+    dropped_benefit = 0
     for finding in research.findings:
         if finding.dimension not in rubric.tags:
             dropped_unknown += 1
+            continue
+        if finding.polarity == "benefit" and not rubric.has_benefit:
+            dropped_benefit += 1
             continue
         key = (finding.source_url, finding.claim)
         if key in seen:
@@ -66,21 +80,29 @@ def build_dossier(subject: Subject, rubric: Rubric, research: ResearchFindings) 
     gaps = list(research.gaps)
     if dropped_unknown:
         gaps.append(f"dropped {dropped_unknown} finding(s) tagged with an unknown dimension")
+    if dropped_benefit:
+        gaps.append(
+            f"dropped {dropped_benefit} benefit finding(s): {rubric.id} has no benefit side"
+        )
     return Dossier(
         rubric_id=rubric.id,
         subject=subject,
         items=items,
         facts=research.facts,
-        queries_run=research.queries_run,
+        queries_run=list(queries_run),
         gaps=gaps,
     )
 
 
-def check_verdict(verdict: JudgeVerdict, dossier: Dossier, rubric: Rubric) -> list[str]:
+def check_verdict(
+    verdict: JudgeVerdict, dossier: Dossier, rubric: Rubric, polarity: Polarity = "harm"
+) -> list[str]:
     """Problems that need the dossier to detect. Empty list means the verdict is sound."""
     problems: list[str] = []
     if verdict.rubric_id != rubric.id:
         problems.append(f"verdict is for {verdict.rubric_id!r}, expected {rubric.id!r}")
+    if verdict.polarity != polarity:
+        problems.append(f"verdict polarity is {verdict.polarity!r}, expected {polarity!r}")
     for score in verdict.dimension_scores:
         if score.dimension not in rubric.tags:
             problems.append(f"unknown dimension {score.dimension!r}; valid: {list(rubric.tags)}")

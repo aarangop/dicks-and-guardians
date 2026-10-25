@@ -14,22 +14,26 @@ from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends, HTTPException
-from langchain_anthropic import ChatAnthropic
 from langchain_core.language_models import BaseChatModel
 from langchain_core.tools import BaseTool
+from langchain_openrouter import ChatOpenRouter
 from langgraph.graph.state import CompiledStateGraph
 from pydantic import SecretStr
 from tavily import TavilyClient
 
+from dont_be_a_dick import tracing
 from dont_be_a_dick.agents import build_research_agent
 from dont_be_a_dick.agents.judge import LangChainJudge
 from dont_be_a_dick.agents.researcher import LangChainResearcher, ResearchBudget
 from dont_be_a_dick.agents.resolver import LangChainSubjectResolver
 from dont_be_a_dick.agents.summarizer import LangChainSummarizer
 from dont_be_a_dick.config import Settings
+from dont_be_a_dick.domain.ports import ResultStore
 from dont_be_a_dick.domain.rubrics import RUBRICS, Rubric
+from dont_be_a_dick.storage.tinydb_store import TinyDBResultStore
 from dont_be_a_dick.tools.web_fetch import make_web_fetch_tool
 from dont_be_a_dick.tools.web_search import make_web_search_tool
+from dont_be_a_dick.workflows.research_runs import ResearchService
 from dont_be_a_dick.workflows.scoring import ScoringPipeline
 
 
@@ -64,12 +68,11 @@ TavilyClientDep = Annotated[TavilyClient, Depends(get_tavily_client)]
 
 @lru_cache
 def get_chat_model(settings: SettingsDep) -> BaseChatModel:
-    return ChatAnthropic(
-        model_name=settings.model_for("chat"),
-        timeout=60.0,
-        max_retries=settings.anthropic_max_retries,
-        stop=None,
-        api_key=_require(settings.anthropic_api_key, "DBAD_ANTHROPIC_API_KEY"),
+    return ChatOpenRouter(
+        model=settings.model_for("chat"),
+        timeout=60_000,  # milliseconds
+        max_retries=settings.llm_max_retries,
+        api_key=_require(settings.openrouter_api_key, "DBAD_OPENROUTER_API_KEY"),
     )
 
 
@@ -77,31 +80,36 @@ ChatModelDep = Annotated[BaseChatModel, Depends(get_chat_model)]
 
 
 @lru_cache
-def _anthropic_model(settings: Settings, model_name: str) -> BaseChatModel:
+def _openrouter_model(
+    settings: Settings, model_name: str, *, cache_prompt: bool = False
+) -> BaseChatModel:
     # No temperature: newer Claude models reject non-default values.
-    return ChatAnthropic(
-        model_name=model_name,
-        timeout=120.0,
-        max_retries=settings.anthropic_max_retries,
-        stop=None,
-        api_key=_require(settings.anthropic_api_key, "DBAD_ANTHROPIC_API_KEY"),
+    # Top-level cache_control makes OpenRouter move a cache breakpoint to the end of the prompt on
+    # every request, so each step of a tool loop reads the previous steps from cache. Single-call
+    # roles leave it off: they would pay the cache-write premium and never read it back.
+    return ChatOpenRouter(
+        model=model_name,
+        timeout=120_000,  # milliseconds
+        max_retries=settings.llm_max_retries,
+        api_key=_require(settings.openrouter_api_key, "DBAD_OPENROUTER_API_KEY"),
+        model_kwargs={"cache_control": {"type": "ephemeral"}} if cache_prompt else {},
     )
 
 
 def get_researcher_model(settings: SettingsDep) -> BaseChatModel:
-    return _anthropic_model(settings, settings.model_for("researcher"))
+    return _openrouter_model(settings, settings.model_for("researcher"), cache_prompt=True)
 
 
 def get_judge_model(settings: SettingsDep) -> BaseChatModel:
-    return _anthropic_model(settings, settings.model_for("judge"))
+    return _openrouter_model(settings, settings.model_for("judge"))
 
 
 def get_resolver_model(settings: SettingsDep) -> BaseChatModel:
-    return _anthropic_model(settings, settings.model_for("resolver"))
+    return _openrouter_model(settings, settings.model_for("resolver"), cache_prompt=True)
 
 
 def get_summarizer_model(settings: SettingsDep) -> BaseChatModel:
-    return _anthropic_model(settings, settings.model_for("summarizer"))
+    return _openrouter_model(settings, settings.model_for("summarizer"))
 
 
 # --- tools ------------------------------------------------------------------
@@ -150,9 +158,12 @@ def get_researcher(
     return LangChainResearcher(model, [web_search, web_fetch], budget=budget)
 
 
+JUDGE_STRUCTURED_OUTPUT = {"method": "json_schema"}
+"""Native JSON-schema output: forced tool calling is unsupported on newer Claude models."""
+
+
 def get_judge(model: Annotated[BaseChatModel, Depends(get_judge_model)]) -> LangChainJudge:
-    # Native JSON-schema output: forced tool calling is unsupported on newer Claude models.
-    return LangChainJudge(model, structured_output_kwargs={"method": "json_schema"})
+    return LangChainJudge(model, structured_output_kwargs=JUDGE_STRUCTURED_OUTPUT)
 
 
 def get_summarizer(
@@ -190,6 +201,24 @@ def get_scoring_pipeline(
 
 
 ScoringPipelineDep = Annotated[ScoringPipeline, Depends(get_scoring_pipeline)]
+
+
+# --- stored runs ------------------------------------------------------------
+
+
+@lru_cache
+def get_result_store(settings: SettingsDep) -> ResultStore:
+    return TinyDBResultStore(settings.db_path)
+
+
+ResultStoreDep = Annotated[ResultStore, Depends(get_result_store)]
+
+
+def get_research_service(pipeline: ScoringPipelineDep, store: ResultStoreDep) -> ResearchService:
+    return ResearchService(pipeline, store, session_scope=tracing.session)
+
+
+ResearchServiceDep = Annotated[ResearchService, Depends(get_research_service)]
 
 
 def build_scoring_pipeline(

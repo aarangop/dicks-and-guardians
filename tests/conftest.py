@@ -1,8 +1,8 @@
 import os
 
-# Keep the test suite out of LangSmith. Set before `config` calls load_dotenv, which never
+# Keep the test suite out of Langfuse. Set before `config` exports `.env`, which never
 # overrides variables already in the environment.
-os.environ["LANGSMITH_TRACING"] = "false"
+os.environ["LANGFUSE_TRACING_ENABLED"] = "false"
 
 import pytest
 from fastapi.testclient import TestClient

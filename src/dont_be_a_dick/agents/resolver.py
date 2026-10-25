@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field
 from dont_be_a_dick.agents.research_agent import build_research_agent
 from dont_be_a_dick.domain.schemas import Ambiguous, Refused, Resolution, Resolved, Subject
 from dont_be_a_dick.prompts import shared_prompt
+from dont_be_a_dick.tracing import callbacks
 
 DEFAULT_RECURSION_LIMIT = 12
 
@@ -71,6 +72,7 @@ class LangChainSubjectResolver:
             {"messages": [{"role": "user", "content": request}]},
             config={
                 "recursion_limit": self._recursion_limit,
+                "callbacks": callbacks(),
                 "run_name": "resolve_subject",
                 "tags": ["resolve"],
                 "metadata": {"subject": name},
