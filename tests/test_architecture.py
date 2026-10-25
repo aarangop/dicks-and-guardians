@@ -6,8 +6,17 @@ from pathlib import Path
 import pytest
 
 SRC = Path(__file__).parent.parent / "src" / "dont_be_a_dick"
-FRAMEWORKS = ("langchain", "langgraph", "tavily", "fastapi", "anthropic", "starlette")
-OUTER_LAYERS = ("agents", "tools", "dependencies", "main", "prompts")
+FRAMEWORKS = (
+    "langchain",
+    "langgraph",
+    "tavily",
+    "fastapi",
+    "anthropic",
+    "openrouter",
+    "starlette",
+    "tinydb",
+)
+OUTER_LAYERS = ("agents", "tools", "dependencies", "main", "prompts", "storage", "evals", "tracing")
 
 
 def imported_modules(package: str) -> set[tuple[Path, str]]:

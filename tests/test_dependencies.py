@@ -12,17 +12,26 @@ def clear_caches():
     deps.get_settings.cache_clear()
     deps.get_tavily_client.cache_clear()
     deps.get_chat_model.cache_clear()
-    deps._anthropic_model.cache_clear()
+    deps._openrouter_model.cache_clear()
     yield
     deps.get_settings.cache_clear()
     deps.get_tavily_client.cache_clear()
     deps.get_chat_model.cache_clear()
-    deps._anthropic_model.cache_clear()
+    deps._openrouter_model.cache_clear()
 
 
 @pytest.fixture
 def settings() -> Settings:
-    return Settings(tavily_api_key="tvly-test", anthropic_api_key="sk-test")
+    # Role overrides are cleared explicitly so a developer's .env cannot leak into the tests.
+    return Settings(
+        tavily_api_key="tvly-test",
+        openrouter_api_key="sk-test",
+        researcher_model=None,
+        judge_model=None,
+        resolver_model=None,
+        summarizer_model=None,
+        chat_model=None,
+    )
 
 
 def test_clients_are_singletons_per_settings(settings: Settings) -> None:
@@ -42,12 +51,12 @@ def test_full_chain_builds_an_agent(settings: Settings) -> None:
     ("provider", "missing"),
     [
         (deps.get_tavily_client, "DBAD_TAVILY_API_KEY"),
-        (deps.get_chat_model, "DBAD_ANTHROPIC_API_KEY"),
+        (deps.get_chat_model, "DBAD_OPENROUTER_API_KEY"),
     ],
 )
 def test_missing_keys_give_503(provider, missing: str) -> None:
     with pytest.raises(HTTPException) as exc:
-        provider(Settings(tavily_api_key="", anthropic_api_key=""))
+        provider(Settings(tavily_api_key="", openrouter_api_key=""))
 
     assert exc.value.status_code == 503
     assert missing in exc.value.detail
@@ -90,7 +99,9 @@ def test_scoring_pipeline_builds_from_settings(settings: Settings) -> None:
 
 
 def test_role_models_are_shared_per_model_name(settings: Settings) -> None:
-    # roles without an override share the default model, so they share one client
-    assert deps.get_researcher_model(settings) is deps.get_judge_model(settings)
+    # roles without an override share the default model, so they share one client per caching mode
+    assert deps.get_researcher_model(settings) is deps.get_resolver_model(settings)
+    assert deps.get_judge_model(settings) is deps.get_summarizer_model(settings)
+    assert deps.get_researcher_model(settings) is not deps.get_judge_model(settings)
     overridden = Settings(**{**settings.model_dump(), "resolver_model": "other-model"})
     assert deps.get_resolver_model(overridden) is not deps.get_judge_model(overridden)
